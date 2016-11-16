@@ -14,6 +14,8 @@
             {%- snippet 'editor/snippets/field_select.html' -%}
         {% endblock  %}
 
+        <input type="hidden" name="form_languages" value="{{c.selected_field['form_languages']}}">
+
         <button type="submit" class="btn btn-primary">{{_('Save')}}</button>
 
         <hr>

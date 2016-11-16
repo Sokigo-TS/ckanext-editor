@@ -53,7 +53,8 @@ class EditorController(p.toolkit.BaseController):
             scheming_fields.append({
                 'field_name': field['field_name'].encode('utf8'),
                 'label': field['label'].encode('utf8'),
-                'form_snippet': field.get('form_snippet').encode('utf8') if field.get('form_snippet') else 'text.html'
+                'form_snippet': field.get('form_snippet').encode('utf8') if field.get('form_snippet') else 'text.html',
+                'form_languages': field.get('form_languages') if field.get('form_languages') else []
             })
 
         # Todo modify to remove duplicate dictionaries
@@ -262,18 +263,29 @@ class EditorController(p.toolkit.BaseController):
 
 
     def package_update(self):
-        package_ids = request.POST.getall('package_id')
-        field = request.POST['field']
-        value = request.POST[field]
-        
         context = {'model': model, 'user': c.user, 'auth_user_obj': c.userobj}
 
+        try:
+            package_ids = request.POST.getall('package_id')
+            field = request.POST['field']
+            languages = eval(request.POST['form_languages'].encode('utf8'))         
+            
+            # If using fluent or fluentall extensions and trying to update multilingual fields
+            if(len(languages) > 0):
+                value = {}
+                for language in languages:
+                    key = field + '-' + language
+                    value.update({ language : request.POST[key] })
+            else:
+                value = request.POST[field]
+
+        except ValidationError:
+            return '{"status":"Conflict", "message":"' + _("Validation error.") + '"}'
+
         for id in package_ids:
-
-            package = toolkit.get_action('package_show')(context, { 'id': id })
-            package[field] = value
-
             try:
+                package = toolkit.get_action('package_show')(context, { 'id': id })
+                package[field] = value
                 toolkit.get_action('package_update')(context, package) 
             except NotAuthorized:
                 return '{"status":"Not Authorized", "message":"' + _("Access denied.") + '"}'
