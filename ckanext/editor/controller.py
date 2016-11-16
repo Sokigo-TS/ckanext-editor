@@ -282,5 +282,5 @@ class EditorController(p.toolkit.BaseController):
             except ValidationError:
                 return '{"status":"Conflict", "message":"' + _("Validation error.") + '"}'
 
-        h.redirect_to('/editor')
+        h.redirect_to('/editor?_field=' + field.encode('utf8'))
         return render('editor/editor_base.html')
