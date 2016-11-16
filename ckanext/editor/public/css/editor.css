@@ -1,0 +1,5 @@
+.table td.condensed, 
+.table th.condensed {
+    white-space: nowrap;
+    width: 1%;
+}
