@@ -44,5 +44,7 @@ To install ckanext-editor:
 Config Settings
 ---------------
 
-TODO
-Document configurations when field configuration available
+Required::
+
+    # List of field_names which will be allowed to be edited by ckanext-editor
+    ckanext.editor.editable_fields 
