@@ -4,6 +4,7 @@ import ckan.plugins.toolkit as toolkit
 
 class EditorPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
+    plugins.implements(plugins.IConfigurable)
     plugins.implements(plugins.IRoutes, inherit=True)
 
     # IConfigurer
@@ -13,6 +14,22 @@ class EditorPlugin(plugins.SingletonPlugin):
         toolkit.add_resource('fanstatic', 'editor')
         toolkit.add_resource('public/css/', 'editor_css')
         toolkit.add_resource('public/js/', 'editor_js')
+
+    # IConfigurable
+
+    def configure(self, config):
+        # Raise an exception if required configs are missing
+        required_keys = [
+            'ckanext.editor.editable_fields'
+        ]
+
+        for key in required_keys:
+            if config.get(key) is None:
+                raise RuntimeError(
+                    'Required configuration option {0} not found.'.format(
+                        key
+                    )
+                )
 
     # IRoutes
 

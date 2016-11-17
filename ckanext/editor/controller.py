@@ -57,13 +57,20 @@ class EditorController(p.toolkit.BaseController):
                 'form_languages': field.get('form_languages') if field.get('form_languages') else []
             })
 
+        allowed_fields = config.get('ckanext.editor.editable_fields')
+        fields = []
+        
+        for field in scheming_fields:
+            if(field['field_name'] in allowed_fields):
+                fields.append(field)
+
         # Todo modify to remove duplicate dictionaries
         # Remove duplicate fields, since scheming can contain fields named similarly to CKAN core fields
         # for field in scheming_fields:
         #     if field not in fields:
         #         fields.append(field)
 
-        return scheming_fields
+        return fields
 
     def package_search(self):
         # Gather extension specific search parameters etc.
