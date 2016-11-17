@@ -44,8 +44,6 @@ class EditorController(p.toolkit.BaseController):
         return 'editor/editor_base.html'
 
     def get_dataset_fields(self):
-        fields = model.Package.get_fields(core_only=True)
-
         scheming_schema = scheming_get_dataset_schema('dataset')['dataset_fields']
 
         scheming_fields = []
@@ -54,7 +52,8 @@ class EditorController(p.toolkit.BaseController):
                 'field_name': field['field_name'].encode('utf8'),
                 'label': field['label'].encode('utf8'),
                 'form_snippet': field.get('form_snippet').encode('utf8') if field.get('form_snippet') else 'text.html',
-                'form_languages': field.get('form_languages') if field.get('form_languages') else []
+                'form_languages': field.get('form_languages') if field.get('form_languages') else [],
+                'form_attrs': field.get('form_attrs') if field.get('form_attrs') else {}
             })
 
         allowed_fields = config.get('ckanext.editor.editable_fields')
@@ -63,12 +62,6 @@ class EditorController(p.toolkit.BaseController):
         for field in scheming_fields:
             if(field['field_name'] in allowed_fields):
                 fields.append(field)
-
-        # Todo modify to remove duplicate dictionaries
-        # Remove duplicate fields, since scheming can contain fields named similarly to CKAN core fields
-        # for field in scheming_fields:
-        #     if field not in fields:
-        #         fields.append(field)
 
         return fields
 
