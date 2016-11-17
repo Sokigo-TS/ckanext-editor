@@ -209,8 +209,11 @@ class EditorController(p.toolkit.BaseController):
                 'start': (page - 1) * limit,
                 'sort': sort_by,
                 'extras': search_extras,
-                # 'include_private': True # Todo, figure out why this parameter is not accepted
             }
+
+            # Include private is added in CKAN v2.6
+            if(toolkit.check_ckan_version('2.6')):
+                data_dict['include_private'] = True
 
             query = get_action('package_search')(context, data_dict)
             c.sort_by_selected = query['sort']
