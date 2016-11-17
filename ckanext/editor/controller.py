@@ -56,6 +56,7 @@ class EditorController(p.toolkit.BaseController):
                 'form_attrs': field.get('form_attrs') if field.get('form_attrs') else {}
             })
 
+        # Stip out fields that are not configured to be editable
         allowed_fields = config.get('ckanext.editor.editable_fields')
         fields = []
         

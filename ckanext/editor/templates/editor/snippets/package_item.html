@@ -28,6 +28,8 @@ Example:
                 {% for item in package['tags'] %}
                     {{item.name}}{% if not loop.last %}, {% endif %}
                 {% endfor %}
+            {% elif c.selected_field.field_name == 'owner_org' %}
+                {{ package['organization'].title }}
             {% else %}
                 {{ package[c.selected_field.field_name] }}
             {% endif %}
