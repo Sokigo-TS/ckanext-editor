@@ -1,0 +1,92 @@
+# Translations template for ckanext-editor.
+# Copyright (C) 2016 ORGANIZATION
+# This file is distributed under the same license as the ckanext-editor project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2016.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: ckanext-editor 0.0.1\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2016-11-18 12:37+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.3.4\n"
+
+#: ckanext/editor/controller.py:75 ckanext/editor/controller.py:285
+#: ckanext/editor/controller.py:310
+msgid "Access denied."
+msgstr ""
+
+#: ckanext/editor/controller.py:98
+msgid "Not authorized to see this page"
+msgstr ""
+
+#: ckanext/editor/controller.py:197
+msgid "Organizations"
+msgstr ""
+
+#: ckanext/editor/controller.py:198
+msgid "Groups"
+msgstr ""
+
+#: ckanext/editor/controller.py:199
+msgid "Tags"
+msgstr ""
+
+#: ckanext/editor/controller.py:200
+msgid "Formats"
+msgstr ""
+
+#: ckanext/editor/controller.py:201
+msgid "Licenses"
+msgstr ""
+
+#: ckanext/editor/controller.py:248
+msgid "Invalid search query: {error_message}"
+msgstr ""
+
+#: ckanext/editor/controller.py:265
+msgid "Parameter \"{parameter_name}\" is not an integer"
+msgstr ""
+
+#: ckanext/editor/controller.py:302 ckanext/editor/controller.py:314
+msgid "Validation error."
+msgstr ""
+
+#: ckanext/editor/controller.py:312
+msgid "Package not found."
+msgstr ""
+
+#: ckanext/editor/templates/editor/editor_base.html:20
+msgid "Save"
+msgstr ""
+
+#: ckanext/editor/templates/editor/snippets/field_select.html:2
+msgid "Select field to edit"
+msgstr ""
+
+#: ckanext/editor/templates/editor/snippets/package_item.html:26
+msgid "Multiple values"
+msgstr ""
+
+#: ckanext/editor/templates/editor/snippets/package_item.html:34
+msgid "Private"
+msgstr ""
+
+#: ckanext/editor/templates/editor/snippets/package_item.html:34
+msgid "Public"
+msgstr ""
+
+#: ckanext/editor/templates/editor/snippets/package_list.html:19
+msgid "Title"
+msgstr ""
+
+#: ckanext/editor/templates/editor/snippets/package_list.html:20
+msgid "Value"
+msgstr ""
+
