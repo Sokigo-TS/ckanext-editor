@@ -22,6 +22,7 @@ c = toolkit.c
 NotFound = logic.NotFound
 NotAuthorized = logic.NotAuthorized
 ValidationError = logic.ValidationError
+check_access = logic.check_access
 get_action = logic.get_action
 abort = base.abort
 render = base.render
