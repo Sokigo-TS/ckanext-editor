@@ -8,6 +8,7 @@ import ckan.lib.base as base
 import logging
 import ckan.lib.helpers as h
 import ckan.logic as logic
+import ckan.authz as authz
 import ckan.plugins as p
 import ckan.plugins.toolkit as toolkit
 import ckan.model as model
@@ -21,7 +22,6 @@ c = toolkit.c
 NotFound = logic.NotFound
 NotAuthorized = logic.NotAuthorized
 ValidationError = logic.ValidationError
-check_access = logic.check_access
 get_action = logic.get_action
 abort = base.abort
 render = base.render
@@ -71,6 +71,9 @@ class EditorController(p.toolkit.BaseController):
         return fields
 
     def package_search(self):
+        if not authz.is_sysadmin(c.user):
+            return '{"status":"Not Authorized", "message":"' + _("Access denied.") + '"}'
+
         # Gather extension specific search parameters etc.
         c.editable_fields = self.get_dataset_fields()
 
@@ -277,6 +280,9 @@ class EditorController(p.toolkit.BaseController):
 
     def package_update(self):
         context = {'model': model, 'user': c.user, 'auth_user_obj': c.userobj}
+
+        if not authz.is_sysadmin(c.user):
+            return '{"status":"Not Authorized", "message":"' + _("Access denied.") + '"}'
 
         try:
             package_ids = request.POST.getall('package_id')
