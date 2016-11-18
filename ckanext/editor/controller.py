@@ -33,6 +33,10 @@ def _encode_params(params):
     return [(k, v.encode('utf-8') if isinstance(v, basestring) else str(v))
             for k, v in params]
 
+def search_url(params):
+    params = _encode_params(params)
+    return 'editor' + u'?' + urlencode(params)
+
 class EditorController(p.toolkit.BaseController):
 
     def _setup_template_variables(self, context, data_dict, package_type=None):
@@ -93,7 +97,12 @@ class EditorController(p.toolkit.BaseController):
         # unicode format (decoded from utf8)
         q = c.q = request.params.get('q', u'')
         c.query_error = False
-        page = 1 # Todo get page with: h.get_page_number(request.params)
+        
+        try:
+            page = self._get_page_number(request.params)
+        except AttributeError:
+            # in CKAN >= 2.5 _get_page_number has been moved
+            page = h.get_page_number(request.params)
 
         limit = g.datasets_per_page
 
@@ -129,7 +138,7 @@ class EditorController(p.toolkit.BaseController):
             if fields:
                 sort_string = ', '.join('%s %s' % f for f in fields)
                 params.append(('sort', sort_string))
-            return search_url(params, package_type)
+            return search_url(params)
 
         c.sort_by = _sort_by
         if not sort_by:
@@ -141,7 +150,7 @@ class EditorController(p.toolkit.BaseController):
         def pager_url(q=None, page=None):
             params = list(params_nopage)
             params.append(('page', page))
-            return search_url(params, package_type)
+            return search_url(params)
 
         c.search_url_params = urlencode(_encode_params(params_nopage))
 
