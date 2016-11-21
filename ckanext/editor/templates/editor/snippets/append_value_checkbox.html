@@ -1,0 +1,21 @@
+{#
+Displays a checkbox to select if the new field value is appended to the old value or the old value is replaced.
+
+field_name        - The name of the selected field
+
+Example:
+
+  {% snippet 'editor/snippets/append_value_checkbox.html', field_name=c.selected_field.field_name %}
+
+#}
+{% set checkbox_active = field_name == 'notes_translated' or field_name == 'title' or field_name == 'maintainer' %}
+{% set checked_default = field_name == 'notes_translated' or field_name == 'title' or field_name == 'maintainer' %}
+
+<div class="form-group">
+    <div class="checkbox">
+        <label class="control-label">
+            <input type="checkbox" name="append_to_old_value" {{ 'checked' if checked_default else None }} {{ 'disabled' if not checkbox_active else None }}>
+            {{ _('Append value to old value') }} 
+        </label>
+    </div>
+</div>

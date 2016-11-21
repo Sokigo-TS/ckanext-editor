@@ -288,16 +288,8 @@ class EditorController(p.toolkit.BaseController):
         try:
             package_ids = request.POST.getall('package_id')
             field = request.POST['field']
+            append_to_old_value = request.POST.get('append_to_old_value')
             languages = eval(request.POST['form_languages'].encode('utf8'))         
-            
-            # If using fluent or fluentall extensions and trying to update multilingual fields
-            if(len(languages) > 0):
-                value = {}
-                for language in languages:
-                    key = field + '-' + language
-                    value.update({ language : request.POST[key] })
-            else:
-                value = request.POST[field]
 
         except ValidationError:
             return '{"status":"Conflict", "message":"' + _("Validation error.") + '"}'
@@ -305,7 +297,36 @@ class EditorController(p.toolkit.BaseController):
         for id in package_ids:
             try:
                 package = toolkit.get_action('package_show')(context, { 'id': id })
-                package[field] = value
+
+                # Append the new value to the old field value if requested
+                if(append_to_old_value):
+
+                    # Update dictionary format value if field consists of multiple languages
+                    if(len(languages) > 0):
+                        value = {}
+                        for language in languages:
+                            key = field + '-' + language
+                            language_value =  package[field].get(language) + request.POST[key]
+                            value.update({ language : language_value })
+
+                        package[field] = value
+                    # Otherwise we can just append the value to the old
+                    else:
+                        package[field] += request.POST[field]
+                        
+                # Replace the old field value entirely
+                else:
+                    # If using fluent or fluentall extensions and trying to update multilingual fields
+                    if(len(languages) > 0):
+                        value = {}
+                        for language in languages:
+                            key = field + '-' + language
+                            value.update({ language : request.POST[key] })
+                    else:
+                        value = request.POST[field]
+
+                    package[field] = value
+
                 toolkit.get_action('package_update')(context, package) 
             except NotAuthorized:
                 return '{"status":"Not Authorized", "message":"' + _("Access denied.") + '"}'

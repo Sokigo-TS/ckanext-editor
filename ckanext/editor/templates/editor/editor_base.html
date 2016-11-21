@@ -15,8 +15,9 @@
             {%- snippet 'editor/snippets/field_select.html' -%}
         {% endblock  %}
 
-        <input type="hidden" name="form_languages" value="{{c.selected_field['form_languages']}}">
+        {% snippet 'editor/snippets/append_value_checkbox.html', field_name=c.selected_field.field_name %}
 
+        <input type="hidden" name="form_languages" value="{{c.selected_field['form_languages']}}">
         <button type="submit" class="btn btn-primary">{{_('Save')}}</button>
 
         <hr>
