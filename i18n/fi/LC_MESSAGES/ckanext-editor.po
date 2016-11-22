@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ckanext-editor 0.0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-11-18 12:37+0000\n"
+"POT-Creation-Date: 2016-11-22 12:43+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Mikko Nieminen <mikko.nieminen@gofore.com>, 2016\n"
 "Language-Team: Finnish (https://www.transifex.com/6aika-dataportal/teams/68018/fi/)\n"
@@ -19,54 +19,58 @@ msgstr ""
 "Language: fi\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ckanext/editor/controller.py:75 ckanext/editor/controller.py:285
-#: ckanext/editor/controller.py:310
+#: ckanext/editor/controller.py:76 ckanext/editor/controller.py:286
+#: ckanext/editor/controller.py:332
 msgid "Access denied."
 msgstr "Pääsy evätty"
 
-#: ckanext/editor/controller.py:98
+#: ckanext/editor/controller.py:99
 msgid "Not authorized to see this page"
 msgstr "Ei oikeuksia nähdä tätä sivua"
 
-#: ckanext/editor/controller.py:197
+#: ckanext/editor/controller.py:198
 msgid "Organizations"
 msgstr "Organisaatiot"
 
-#: ckanext/editor/controller.py:198
+#: ckanext/editor/controller.py:199
 msgid "Groups"
 msgstr "Ryhmät"
 
-#: ckanext/editor/controller.py:199
+#: ckanext/editor/controller.py:200
 msgid "Tags"
 msgstr "Avainsanat"
 
-#: ckanext/editor/controller.py:200
+#: ckanext/editor/controller.py:201
 msgid "Formats"
 msgstr "Muodot"
 
-#: ckanext/editor/controller.py:201
+#: ckanext/editor/controller.py:202
 msgid "Licenses"
 msgstr "Lisenssit"
 
-#: ckanext/editor/controller.py:248
+#: ckanext/editor/controller.py:249
 msgid "Invalid search query: {error_message}"
 msgstr ""
 
-#: ckanext/editor/controller.py:265
+#: ckanext/editor/controller.py:266
 msgid "Parameter \"{parameter_name}\" is not an integer"
 msgstr ""
 
-#: ckanext/editor/controller.py:302 ckanext/editor/controller.py:314
+#: ckanext/editor/controller.py:295 ckanext/editor/controller.py:336
 msgid "Validation error."
 msgstr ""
 
-#: ckanext/editor/controller.py:312
+#: ckanext/editor/controller.py:334
 msgid "Package not found."
 msgstr ""
 
-#: ckanext/editor/templates/editor/editor_base.html:20
+#: ckanext/editor/templates/editor/editor_base.html:21
 msgid "Save"
 msgstr "Tallenna"
+
+#: ckanext/editor/templates/editor/snippets/append_value_checkbox.html:18
+msgid "Append value to old value"
+msgstr "Lisää syötetty arvo kentän vanhaan arvoon"
 
 #: ckanext/editor/templates/editor/snippets/field_select.html:2
 msgid "Select field to edit"
