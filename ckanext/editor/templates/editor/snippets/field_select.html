@@ -1,5 +1,5 @@
 <div class="form-group">
-  <label for="field-select" class="control-label">{{ _('Select field to edit') }}</label>
+  <label for="field-select" class="control-label"><h3>{{ _('Select field to edit') }}</h3></label>
   <div class="controls">
     <select id="field-select" class="form-control" name="field" onchange="if (this.value) window.location.href='/editor?_field=' + this.value">
       {% for option in c.editable_fields %}

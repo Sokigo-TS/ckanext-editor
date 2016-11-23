@@ -92,5 +92,5 @@ msgid "Title"
 msgstr ""
 
 #: ckanext/editor/templates/editor/snippets/package_list.html:20
-msgid "Value"
+msgid "Field value"
 msgstr ""
