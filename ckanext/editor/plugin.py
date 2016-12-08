@@ -20,7 +20,8 @@ class EditorPlugin(plugins.SingletonPlugin):
     def configure(self, config):
         # Raise an exception if required configs are missing
         required_keys = [
-            'ckanext.editor.editable_fields'
+            'ckanext.editor.editable_fields',
+            'ckanext.editor.default_field'
         ]
 
         for key in required_keys:

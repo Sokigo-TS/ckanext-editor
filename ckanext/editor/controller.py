@@ -13,7 +13,6 @@ import ckan.plugins as p
 import ckan.plugins.toolkit as toolkit
 import ckan.model as model
 import ckan.lib.maintain as maintain
-import ckan.lib.render
 import ckan
 
 _ = toolkit._
@@ -79,7 +78,7 @@ class EditorController(p.toolkit.BaseController):
         c.editable_fields = self.get_dataset_fields()
 
         # Set default field to selection
-        default_field = request.params.get('_field') if request.params.get('_field') else 'title'
+        default_field = request.params.get('_field') if request.params.get('_field') else config.get('ckanext.editor.default_field')
         c.selected_field = {}
         for field in c.editable_fields:
             if(field.get('field_name') == default_field):

@@ -47,4 +47,7 @@ Config Settings
 Required::
 
     # List of field_names which will be allowed to be edited by ckanext-editor
-    ckanext.editor.editable_fields 
+    ckanext.editor.editable_fields
+
+    # Default selected field when loading the editor
+    ckanext.editor.default_field
