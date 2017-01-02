@@ -1,0 +1,5 @@
+<select id="field-add_group" name="group" data-module="autocomplete">
+  {% for option in c.collection_dropdown %}
+  <option value="{{ option[0] }}"> {{ option[1] }}</option>
+  {% endfor %}
+</select>

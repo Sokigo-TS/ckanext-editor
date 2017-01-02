@@ -47,7 +47,7 @@ class EditorController(p.toolkit.BaseController):
     def _search_template(self, package_type):
         return 'editor/editor_base.html'
 
-    def get_dataset_fields(self):
+    def get_editable_fields(self):
         scheming_schema = scheming_get_dataset_schema('dataset')['dataset_fields']
 
         scheming_fields = []
@@ -68,6 +68,53 @@ class EditorController(p.toolkit.BaseController):
             if(field['field_name'] in allowed_fields):
                 fields.append(field)
 
+        # The extension supports also group editing if enabled in the config
+        if config.get('ckanext.editor.enable_group_editing'):
+            context = {'model': model, 'session': model.Session,
+                       'user': c.user, 'for_view': True,
+                       'auth_user_obj': c.userobj, 'use_cache': False}
+
+            users_groups = get_action('group_list_authz')(context, {})
+
+            c.group_dropdown = [[group['id'], group['display_name']]
+                                     for group in users_groups if
+                                     group['type'] == 'group']
+
+            group_field = {
+                'field_name': 'group',
+                'label': 'Group',
+                'form_snippet': 'group.html',
+                'form_languages': [],
+                'form_attrs': {}
+            }
+
+            fields.append(group_field)
+
+        # Add an editable field for collections if enabled
+        # Requires ckanext-collection: https://github.com/6aika/ckanext-collection
+        if config.get('ckanext.editor.enable_collection_editing') and p.plugin_loaded('collection'):
+            context = {'model': model, 'session': model.Session,
+                       'user': c.user, 'for_view': True,
+                       'auth_user_obj': c.userobj, 'use_cache': False}
+
+            users_groups = get_action('group_list_authz')(context, {})
+
+            c.collection_dropdown = [[group['id'], group['display_name']]
+                                for group in users_groups if
+                                group['type'] == 'collection']
+
+            collection_field = {
+                'field_name': 'collection',
+                'label': 'Collection',
+                'form_snippet': 'collection.html',
+                'form_languages': [],
+                'form_attrs': {}
+            }
+
+            fields.append(collection_field)
+        elif config.get('ckanext.editor.enable_collection_editing') and not p.plugin_loaded('collection'):
+            log.error("Plugin ckanext-collection not loaded")
+
         return fields
 
     def package_search(self):
@@ -75,7 +122,7 @@ class EditorController(p.toolkit.BaseController):
             return '{"status":"Not Authorized", "message":"' + _("Access denied.") + '"}'
 
         # Gather extension specific search parameters etc.
-        c.editable_fields = self.get_dataset_fields()
+        c.editable_fields = self.get_editable_fields()
 
         # Set default field to selection
         default_field = request.params.get('_field') if request.params.get('_field') else config.get('ckanext.editor.default_field')
@@ -285,6 +332,7 @@ class EditorController(p.toolkit.BaseController):
             return '{"status":"Not Authorized", "message":"' + _("Access denied.") + '"}'
 
         try:
+            log.info(request.POST)
             package_ids = request.POST.getall('package_id')
             field = request.POST['field']
             append_to_old_value = request.POST.get('append_to_old_value')
@@ -297,36 +345,53 @@ class EditorController(p.toolkit.BaseController):
             try:
                 package = toolkit.get_action('package_show')(context, { 'id': id })
 
-                # Append the new value to the old field value if requested
-                if(append_to_old_value):
+                # Groups and collections need special treatment since not included in the data model
+                # and thus cannot be updated with package_update
+                if field == 'group' or field == 'collection':
+                    context = {'model': model, 'session': model.Session,
+                               'user': c.user, 'for_view': True,
+                               'auth_user_obj': c.userobj, 'use_cache': False}
+                    new_group = request.POST.get('group')
+                    if new_group:
+                        data_dict = {"id": new_group,
+                                     "object": id,
+                                     "object_type": 'package',
+                                     "capacity": 'public'}
+                        try:
+                            get_action('member_create')(context, data_dict)
+                        except NotFound:
+                            abort(404, _('Group not found'))
+                else:
+                    # Append the new value to the old field value if requested
+                    if(append_to_old_value):
 
-                    # Update dictionary format value if field consists of multiple languages
-                    if(len(languages) > 0):
-                        value = {}
-                        for language in languages:
-                            key = field + '-' + language
-                            language_value =  package[field].get(language) + request.POST[key]
-                            value.update({ language : language_value })
+                        # Update dictionary format value if field consists of multiple languages
+                        if(len(languages) > 0):
+                            value = {}
+                            for language in languages:
+                                key = field + '-' + language
+                                language_value =  package[field].get(language) + request.POST[key]
+                                value.update({ language : language_value })
+
+                            package[field] = value
+                        # Otherwise we can just append the value to the old
+                        else:
+                            package[field] += request.POST[field]
+
+                    # Replace the old field value entirely
+                    else:
+                        # If using fluent or fluentall extensions and trying to update multilingual fields
+                        if(len(languages) > 0):
+                            value = {}
+                            for language in languages:
+                                key = field + '-' + language
+                                value.update({ language : request.POST[key] })
+                        else:
+                            value = request.POST[field]
 
                         package[field] = value
-                    # Otherwise we can just append the value to the old
-                    else:
-                        package[field] += request.POST[field]
-                        
-                # Replace the old field value entirely
-                else:
-                    # If using fluent or fluentall extensions and trying to update multilingual fields
-                    if(len(languages) > 0):
-                        value = {}
-                        for language in languages:
-                            key = field + '-' + language
-                            value.update({ language : request.POST[key] })
-                    else:
-                        value = request.POST[field]
 
-                    package[field] = value
-
-                toolkit.get_action('package_update')(context, package) 
+                    toolkit.get_action('package_update')(context, package)
             except NotAuthorized:
                 return '{"status":"Not Authorized", "message":"' + _("Access denied.") + '"}'
             except NotFound:
