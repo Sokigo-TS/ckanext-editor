@@ -51,3 +51,35 @@ Required::
 
     # Default selected field when loading the editor
     ckanext.editor.default_field
+
+    # List of fields for which new entered values can be appended to the field's old value instead of replacing the old value
+    ckanext.editor.appendable_fields
+
+    # Set this to True to enable adding/removing of groups which a dataset belongs to
+    # Adds a Group-option to the editable field selection
+    # Will default to False
+    ckanext.editor.enable_group_editing
+
+    # Set this to True if using ckanext-collection: https://github.com/6aika/ckanext-collection
+    # Adds a Collection-option to the editable fields and makes it possible to add/remove collections similar to groups
+    # Will default to False
+    ckanext.editor.enable_collection_editing
+
+
+---------------
+Updating translations
+---------------
+
+To extract all translatable strings run this command in the plugin root directory::
+
+    python setup.py extract_messages
+
+After this the updated ckanext-editor.pot with the source language can be pushed to Transifex with the transifex client.
+Note that you need to set your transifex credentials into ~/.transifexrc before running the command::
+
+    tx push --source
+
+Translate new strings in Transifex and pull them by running::
+
+    # --force can be added if old translations can be overwritten by the ones fetched from transifex (this is usually the case)
+    tx pull
