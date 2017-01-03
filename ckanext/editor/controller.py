@@ -117,9 +117,6 @@ class EditorController(p.toolkit.BaseController):
         elif config.get('ckanext.editor.enable_collection_editing') and not p.plugin_loaded('collection'):
             log.error("Plugin ckanext-collection not loaded")
 
-        # Set the fields that have values which are appendable
-        c.appendable_fields = config.get('ckanext.editor.appendable_fields')
-
         return fields
 
     def package_search(self):
@@ -135,6 +132,15 @@ class EditorController(p.toolkit.BaseController):
         for field in c.editable_fields:
             if(field.get('field_name') == default_field):
                 c.selected_field = field
+
+        # Check if the currently selected field type has a type of value that can be appended by a newly entered value
+        # Groups and certain other fields are always appendable but not replaceable
+        if c.selected_field.get('field_name') in config.get('ckanext.editor.appendable_fields') \
+                or c.selected_field.get('field_name') == 'group' \
+                or c.selected_field.get('field_name') == 'collection':
+            c.selected_field_appendable = True
+        else:
+            c.selected_field_appendable = False
 
         # The search functionality is similar to CKAN package search in ckan/controllers/package.py
         # This might need updating if the core package search functionality is changed after v2.5

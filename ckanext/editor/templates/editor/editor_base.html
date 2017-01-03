@@ -15,19 +15,26 @@
             {%- snippet 'editor/snippets/field_select.html' -%}
         {% endblock  %}
 
-        <div class="radio">
-          <label><input type="radio" name="edit_action" value="append" checked>{{ _('Add entered value to old values') }}</label>
+        <div>
+          {% if c.selected_field_appendable %}
+            <div class="radio">
+              <label><input type="radio" name="edit_action" value="append" checked>{{ _('Add entered value to old values') }}</label>
+            </div>
+
+          {% if not c.selected_field.removable_value %}
+            <div class="radio">
+              <label><input type="radio" name="edit_action" value="replace">{{ _('Replace old value with the entered value') }}</label>
+            </div>
+          {% endif %}
+          {% if c.selected_field.removable_value %}
+            <div class="radio">
+              <label><input type="radio" name="edit_action" value="remove">{{ _('Remove entered value if found') }}</label>
+            </div>
+          {% endif %}
+          {% else %}
+            {{ _('The entered field value will replace the old value if it exists') }}
+          {% endif %}
         </div>
-        {% if not c.selected_field.removable_value %}
-        <div class="radio">
-          <label><input type="radio" name="edit_action" value="replace">{{ _('Replace old value with the entered value') }}</label>
-        </div>
-        {% endif %}
-        {% if c.selected_field.removable_value %}
-        <div class="radio">
-          <label><input type="radio" name="edit_action" value="remove">{{ _('Remove entered value if found') }}</label>
-        </div>
-        {% endif %}
 
         <input type="hidden" name="form_languages" value="{{c.selected_field['form_languages']}}">
         <button type="submit" class="btn btn-primary">{{_('Save')}}</button>
