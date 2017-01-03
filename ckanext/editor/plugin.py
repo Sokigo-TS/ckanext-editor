@@ -21,7 +21,8 @@ class EditorPlugin(plugins.SingletonPlugin):
         # Raise an exception if required configs are missing
         required_keys = [
             'ckanext.editor.editable_fields',
-            'ckanext.editor.default_field'
+            'ckanext.editor.default_field',
+            'ckanext.editor.appendable_fields'
         ]
 
         for key in required_keys:

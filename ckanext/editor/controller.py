@@ -60,7 +60,7 @@ class EditorController(p.toolkit.BaseController):
                 'form_attrs': field.get('form_attrs') if field.get('form_attrs') else {}
             })
 
-        # Stip out fields that are not configured to be editable
+        # Strip out fields that are not configured to be editable
         allowed_fields = config.get('ckanext.editor.editable_fields')
         fields = []
         
@@ -85,7 +85,8 @@ class EditorController(p.toolkit.BaseController):
                 'label': 'Group',
                 'form_snippet': 'group.html',
                 'form_languages': [],
-                'form_attrs': {}
+                'form_attrs': {},
+                'removable_value': True
             }
 
             fields.append(group_field)
@@ -108,12 +109,16 @@ class EditorController(p.toolkit.BaseController):
                 'label': 'Collection',
                 'form_snippet': 'collection.html',
                 'form_languages': [],
-                'form_attrs': {}
+                'form_attrs': {},
+                'removable_value': True
             }
 
             fields.append(collection_field)
         elif config.get('ckanext.editor.enable_collection_editing') and not p.plugin_loaded('collection'):
             log.error("Plugin ckanext-collection not loaded")
+
+        # Set the fields that have values which are appendable
+        c.appendable_fields = config.get('ckanext.editor.appendable_fields')
 
         return fields
 
@@ -335,7 +340,7 @@ class EditorController(p.toolkit.BaseController):
             log.info(request.POST)
             package_ids = request.POST.getall('package_id')
             field = request.POST['field']
-            append_to_old_value = request.POST.get('append_to_old_value')
+            edit_action = request.POST['edit_action']
             languages = eval(request.POST['form_languages'].encode('utf8'))         
 
         except ValidationError:
@@ -351,19 +356,33 @@ class EditorController(p.toolkit.BaseController):
                     context = {'model': model, 'session': model.Session,
                                'user': c.user, 'for_view': True,
                                'auth_user_obj': c.userobj, 'use_cache': False}
-                    new_group = request.POST.get('group')
-                    if new_group:
-                        data_dict = {"id": new_group,
+
+                    if(edit_action == 'append'):
+
+                        new_group = request.POST.get('group')
+                        if new_group:
+                            data_dict = {"id": new_group,
+                                         "object": id,
+                                         "object_type": 'package',
+                                         "capacity": 'public'}
+                            try:
+                                get_action('member_create')(context, data_dict)
+                            except NotFound:
+                                abort(404, _('Group not found'))
+                    elif(edit_action == 'remove'):
+                        removed_group = request.POST.get('group')
+
+                        data_dict = {"id": removed_group,
                                      "object": id,
-                                     "object_type": 'package',
-                                     "capacity": 'public'}
+                                     "object_type": 'package'}
+
                         try:
-                            get_action('member_create')(context, data_dict)
+                            get_action('member_delete')(context, data_dict)
                         except NotFound:
                             abort(404, _('Group not found'))
                 else:
                     # Append the new value to the old field value if requested
-                    if(append_to_old_value):
+                    if(edit_action == 'append'):
 
                         # Update dictionary format value if field consists of multiple languages
                         if(len(languages) > 0):
@@ -378,8 +397,11 @@ class EditorController(p.toolkit.BaseController):
                         else:
                             package[field] += request.POST[field]
 
+                    elif(edit_action == 'remove'):
+                        log.info("Remove action not supported for other fields than group and collection")
+
                     # Replace the old field value entirely
-                    else:
+                    elif(edit_action == 'replace'):
                         # If using fluent or fluentall extensions and trying to update multilingual fields
                         if(len(languages) > 0):
                             value = {}
@@ -390,6 +412,8 @@ class EditorController(p.toolkit.BaseController):
                             value = request.POST[field]
 
                         package[field] = value
+                    else:
+                        log.error('Provided edit action "' + edit_action + '" not supported')
 
                     toolkit.get_action('package_update')(context, package)
             except NotAuthorized:
