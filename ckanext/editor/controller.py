@@ -343,7 +343,6 @@ class EditorController(p.toolkit.BaseController):
             return '{"status":"Not Authorized", "message":"' + _("Access denied.") + '"}'
 
         try:
-            log.info(request.POST)
             package_ids = request.POST.getall('package_id')
             field = request.POST['field']
             edit_action = request.POST['edit_action']
@@ -351,6 +350,8 @@ class EditorController(p.toolkit.BaseController):
 
         except ValidationError:
             return '{"status":"Conflict", "message":"' + _("Validation error.") + '"}'
+        except KeyError:
+            return '{"status":"Bad request", "message":"' + _("Key error.") + '"}'
 
         for id in package_ids:
             try:

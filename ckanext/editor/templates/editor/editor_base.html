@@ -33,6 +33,7 @@
           {% endif %}
           {% else %}
             {{ _('The entered field value will replace the old value if it exists') }}
+            <input type="hidden" name="edit_action" value="replace">
           {% endif %}
         </div>
 
