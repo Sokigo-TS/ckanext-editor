@@ -2,7 +2,7 @@
 host = https://www.transifex.com
 
 [sixodp.ckanext-editor]
-file_filter = i18n/<lang>/LC_MESSAGES/ckanext-editor.po
-source_file = i18n/ckanext-editor.pot
+file_filter = ckanext/editor/i18n/<lang>/LC_MESSAGES/ckanext-editor.po
+source_file = ckanext/editor/i18n/ckanext-editor.pot
 source_lang = en
 type = PO
