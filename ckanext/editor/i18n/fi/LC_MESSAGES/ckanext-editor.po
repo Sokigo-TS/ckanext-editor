@@ -50,19 +50,19 @@ msgstr "Lisenssit"
 
 #: ckanext/editor/controller.py:306
 msgid "Invalid search query: {error_message}"
-msgstr ""
+msgstr "Virheellinen haku: {error_message}"
 
 #: ckanext/editor/controller.py:323
 msgid "Parameter \"{parameter_name}\" is not an integer"
-msgstr ""
+msgstr "Parametri \"{parameter_name}\" ei ole kokonaisluku"
 
 #: ckanext/editor/controller.py:353 ckanext/editor/controller.py:430
 msgid "Validation error."
-msgstr ""
+msgstr "Validointivirhe"
 
 #: ckanext/editor/controller.py:377 ckanext/editor/controller.py:388
 msgid "Group not found"
-msgstr ""
+msgstr "Kategoriaa ei löydy"
 
 #: ckanext/editor/controller.py:428
 msgid "Package not found."
@@ -114,8 +114,8 @@ msgstr "Kentän arvo"
 
 #: ckanext/editor/templates/scheming/form_snippets/collection.html:8
 msgid "No collections found"
-msgstr ""
+msgstr "Aineistokokonaisuuksia ei löytynyt"
 
 #: ckanext/editor/templates/scheming/form_snippets/group.html:8
 msgid "No groups found"
-msgstr ""
+msgstr "Kategorioita ei löytynyt"
