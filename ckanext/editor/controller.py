@@ -38,10 +38,10 @@ def search_url(params):
     params = _encode_params(params)
     return 'editor' + u'?' + urlencode(params)
 
-def get_appended_value(package, edit_params):
+def append_package_value(package, edit_params):
     field = edit_params.get('field')
     languages = edit_params.get('languages')
-    format_as_tags = edit_params['format_as_tags']
+    format_as_tags = edit_params.get('format_as_tags')
 
     # Update dictionary format value if field consists of multiple languages
     if(len(languages) > 0 and not format_as_tags):
@@ -66,6 +66,33 @@ def get_appended_value(package, edit_params):
     # Otherwise we can just append the value to the old
     else:
         package[field] += request.POST[field]
+
+    return package
+
+def replace_package_value(package, edit_params):
+    field = edit_params.get('field')
+    languages = edit_params.get('languages')
+    format_as_tags = edit_params.get('format_as_tags')
+
+    # If using fluent or fluentall extensions and trying to update multilingual fields
+    if(len(languages) > 0 and not format_as_tags):
+        value = {}
+        for language in languages:
+            key = field + '-' + language
+            value.update({ language : request.POST[key] })
+    # If the value is tag-string list and consists of multiple languages, it needs to be formatted as a list
+    elif(len(languages) > 0 and format_as_tags):
+        value = {}
+        for language in languages:
+            key = field + '-' + language
+            language_value = request.POST[key].split(",")
+            value.update({ language : language_value })
+
+        package[field] = value
+    else:
+        value = request.POST[field]
+
+    package[field] = value
 
     return package
 
@@ -96,7 +123,7 @@ class EditorController(p.toolkit.BaseController):
         # Strip out fields that are not configured to be editable
         allowed_fields = config.get('ckanext.editor.editable_fields')
         fields = []
-        
+
         for field in scheming_fields:
             if(field['field_name'] in allowed_fields):
                 fields.append(field)
@@ -144,6 +171,7 @@ class EditorController(p.toolkit.BaseController):
                 'form_snippet': 'collection.html',
                 'form_languages': [],
                 'form_attrs': {},
+                'format_as_tags': False,
                 'removable_value': True
             }
 
@@ -192,7 +220,7 @@ class EditorController(p.toolkit.BaseController):
         # unicode format (decoded from utf8)
         q = c.q = request.params.get('q', u'')
         c.query_error = False
-        
+
         try:
             page = self._get_page_number(request.params)
         except AttributeError:
@@ -430,31 +458,12 @@ class EditorController(p.toolkit.BaseController):
                 else:
                     # Append the new value to the old field value if requested
                     if(edit_params['edit_action'] == 'append'):
-                        package = get_appended_value(package, edit_params)
-
+                        package = append_package_value(package, edit_params)
                     elif(edit_params['edit_action'] == 'remove'):
                         log.info("Remove action not supported for other fields than group and collection")
-
                     # Replace the old field value entirely
                     elif(edit_params['edit_action'] == 'replace'):
-                        # If using fluent or fluentall extensions and trying to update multilingual fields
-                        if(len(edit_params['languages']) > 0 and not edit_params['format_as_tags']):
-                            value = {}
-                            for language in edit_params['languages']:
-                                key = edit_params['field'] + '-' + language
-                                value.update({ language : request.POST[key] })
-                        elif(len(edit_params['languages']) > 0 and edit_params['format_as_tags']):
-                            value = {}
-                            for language in edit_params['languages']:
-                                key = edit_params['field'] + '-' + language
-                                language_value = request.POST[key].split(",")
-                                value.update({ language : language_value })
-
-                            package[edit_params['field']] = value
-                        else:
-                            value = request.POST[edit_params['field']]
-
-                        package[edit_params['field']] = value
+                        package = replace_package_value(package, edit_params)
                     else:
                         log.error('Provided edit action "' + edit_params['edit_action'] + '" not supported')
 
