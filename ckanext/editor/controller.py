@@ -57,7 +57,8 @@ class EditorController(p.toolkit.BaseController):
                 'label': field['label'].encode('utf8'),
                 'form_snippet': field.get('form_snippet').encode('utf8') if field.get('form_snippet') else 'text.html',
                 'form_languages': field.get('form_languages') if field.get('form_languages') else [],
-                'form_attrs': field.get('form_attrs') if field.get('form_attrs') else {}
+                'form_attrs': field.get('form_attrs') if field.get('form_attrs') else {},
+                'format_as_tags': True if field.get('form_attrs', {}).get('data-module-tags', None) is not None else False
             })
 
         # Strip out fields that are not configured to be editable
@@ -86,6 +87,7 @@ class EditorController(p.toolkit.BaseController):
                 'form_snippet': 'group.html',
                 'form_languages': [],
                 'form_attrs': {},
+                'format_as_tags': False,
                 'removable_value': True
             }
 
@@ -346,7 +348,8 @@ class EditorController(p.toolkit.BaseController):
             package_ids = request.POST.getall('package_id')
             field = request.POST['field']
             edit_action = request.POST['edit_action']
-            languages = eval(request.POST['form_languages'].encode('utf8'))         
+            format_as_tags = request.POST['format_as_tags']
+            languages = eval(request.POST['form_languages'].encode('utf8'))
 
         except ValidationError:
             return '{"status":"Conflict", "message":"' + _("Validation error.") + '"}'
@@ -387,16 +390,29 @@ class EditorController(p.toolkit.BaseController):
                             get_action('member_delete')(context, data_dict)
                         except NotFound:
                             abort(404, _('Group not found'))
+
+                # All other types of fields can be updated with package_update
                 else:
                     # Append the new value to the old field value if requested
                     if(edit_action == 'append'):
 
                         # Update dictionary format value if field consists of multiple languages
-                        if(len(languages) > 0):
+                        if(len(languages) > 0 and not format_as_tags):
                             value = {}
                             for language in languages:
                                 key = field + '-' + language
                                 language_value =  package[field].get(language) + request.POST[key]
+                                value.update({ language : language_value })
+
+                            package[field] = value
+                        # If the value is tag-like and consists of multiple languages, it need to be formatted as a tag list
+                        elif(len(languages) > 0 and format_as_tags):
+                            value = {}
+                            for language in languages:
+                                key = field + '-' + language
+                                tag_list = request.POST[key].split(",")
+
+                                language_value =  package[field].get(language) + tag_list if package[field].get(language) is not None else tag_list
                                 value.update({ language : language_value })
 
                             package[field] = value
@@ -410,11 +426,19 @@ class EditorController(p.toolkit.BaseController):
                     # Replace the old field value entirely
                     elif(edit_action == 'replace'):
                         # If using fluent or fluentall extensions and trying to update multilingual fields
-                        if(len(languages) > 0):
+                        if(len(languages) > 0 and not format_as_tags):
                             value = {}
                             for language in languages:
                                 key = field + '-' + language
                                 value.update({ language : request.POST[key] })
+                        elif(len(languages) > 0 and format_as_tags):
+                            value = {}
+                            for language in languages:
+                                key = field + '-' + language
+                                language_value = request.POST[key].split(",")
+                                value.update({ language : language_value })
+
+                            package[field] = value
                         else:
                             value = request.POST[field]
 

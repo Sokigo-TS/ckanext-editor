@@ -37,9 +37,10 @@
           {% endif %}
         </div>
 
+        <input type="hidden" name="format_as_tags" value="{{c.selected_field['format_as_tags']}}">
         <input type="hidden" name="form_languages" value="{{c.selected_field['form_languages']}}">
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary">{{_('Save')}}</button>
+          <button type="submit" id="editor-form-submit" class="btn btn-primary">{{_('Save')}}</button>
         </div>
 
         <hr>

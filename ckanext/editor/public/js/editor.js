@@ -11,4 +11,10 @@ $(document).ready(function() {
             });
         }
     });
-})
+
+    $("#editor-form-submit").click(function(event){
+        if(!confirm ("Are you sure you want to edit the selected datasets?")) {
+            event.preventDefault();
+        }
+    });
+});
