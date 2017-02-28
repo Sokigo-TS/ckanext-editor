@@ -20,21 +20,25 @@ Example:
 {% block package_item %}
     <tr class="{{ item_class or "dataset-item" }}">
         <td class="condensed text-center"><input type="checkbox" value="{{package.id}}" name="package_id" /></td>
-        <td>{{ h.link_to(h.truncate(title, truncate_title), h.url_for(controller='package', action='read', id=package.name)) }}</td>
-        <td>
-            {% if package[c.selected_field.field_name] is mapping %}
-                {{ _('Multiple values') }}
-            {% elif c.selected_field.field_name == 'tag_string' %}
-                {% for item in package['tags'] %}
-                    {{item.name}}{% if not loop.last %}, {% endif %}
-                {% endfor %}
-            {% elif c.selected_field.field_name == 'owner_org' %}
-                {{ package['organization'].title }}
-            {% elif c.selected_field.field_name == 'private' %}
-                {{ _('Private') if package[c.selected_field.field_name] else _('Public') }}
-            {% else %}
-                {{ package[c.selected_field.field_name] }}
-            {% endif %}
+        <td class="condensed">{{ h.link_to(h.truncate(title, truncate_title), h.url_for(controller='package', action='read', id=package.name)) }}</td>
+        <td class="field-value-column">
+            <div class="column-content">
+                {% if package[c.selected_field.field_name] is mapping %}
+                    {% for key, value in package[c.selected_field.field_name].iteritems() %}
+                        <b>{{key}}:</b> {{value}} {% if not loop.last %}<hr>{% endif %}
+                    {% endfor %}
+                {% elif c.selected_field.field_name == 'tag_string' %}
+                    {% for item in package['tags'] %}
+                        {{item.name}}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                {% elif c.selected_field.field_name == 'owner_org' %}
+                    {{ package['organization'].title }}
+                {% elif c.selected_field.field_name == 'private' %}
+                    {{ _('Private') if package[c.selected_field.field_name] else _('Public') }}
+                {% else %}
+                    {{ package[c.selected_field.field_name] }}
+                {% endif %}
+            </div>
         </td>
     </tr>
 {% endblock %}

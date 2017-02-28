@@ -3,3 +3,12 @@
     white-space: nowrap;
     width: 29px;
 }
+
+.field-value-column {
+    max-height: 200px;
+    overflow: auto;
+}
+
+.field-value-column .column-content {
+    max-height: 200px;
+}
