@@ -14,6 +14,7 @@ import ckan.plugins.toolkit as toolkit
 import ckan.model as model
 import ckan.lib.maintain as maintain
 import ckan
+import ast
 
 _ = toolkit._
 c = toolkit.c
@@ -36,6 +37,37 @@ def _encode_params(params):
 def search_url(params):
     params = _encode_params(params)
     return 'editor' + u'?' + urlencode(params)
+
+def get_appended_value(package, edit_params):
+    field = edit_params.get('field')
+    languages = edit_params.get('languages')
+    format_as_tags = edit_params['format_as_tags']
+
+    # Update dictionary format value if field consists of multiple languages
+    if(len(languages) > 0 and not format_as_tags):
+        value = {}
+        for language in edit_params['languages']:
+            key = field + '-' + language
+            language_value =  package[field].get(language) + request.POST[key]
+            value.update({ language : language_value })
+
+        package[field] = value
+    # If the value is tag-like and consists of multiple languages, it need to be formatted as a tag list
+    elif(len(languages) > 0 and format_as_tags):
+        value = {}
+        for language in languages:
+            key = field + '-' + language
+            tag_list = request.POST[key].split(",")
+
+            language_value = package[field].get(language) + tag_list if package[field].get(language) is not None else tag_list
+            value.update({ language : language_value })
+
+        package[field] = value
+    # Otherwise we can just append the value to the old
+    else:
+        package[field] += request.POST[field]
+
+    return package
 
 class EditorController(p.toolkit.BaseController):
 
@@ -340,34 +372,37 @@ class EditorController(p.toolkit.BaseController):
 
     def package_update(self):
         context = {'model': model, 'user': c.user, 'auth_user_obj': c.userobj}
+        edit_params = {}
 
         if not authz.is_sysadmin(c.user):
             return '{"status":"Not Authorized", "message":"' + _("Access denied.") + '"}'
 
         try:
-            package_ids = request.POST.getall('package_id')
-            field = request.POST['field']
-            edit_action = request.POST['edit_action']
-            format_as_tags = request.POST['format_as_tags']
-            languages = eval(request.POST['form_languages'].encode('utf8'))
+            edit_params = {
+                'package_ids': request.POST.getall('package_id'),
+                'field': request.POST['field'],
+                'edit_action': request.POST['edit_action'],
+                'format_as_tags': ast.literal_eval(request.POST['format_as_tags']),
+                'languages': ast.literal_eval(request.POST['form_languages'].encode('utf8'))
+            }
 
         except ValidationError:
             return '{"status":"Conflict", "message":"' + _("Validation error.") + '"}'
         except KeyError:
             return '{"status":"Bad request", "message":"' + _("Key error.") + '"}'
 
-        for id in package_ids:
+        for id in edit_params['package_ids']:
             try:
                 package = toolkit.get_action('package_show')(context, { 'id': id })
 
                 # Groups and collections need special treatment since not included in the data model
                 # and thus cannot be updated with package_update
-                if field == 'group' or field == 'collection':
+                if edit_params['field'] == 'group' or edit_params['field'] == 'collection':
                     context = {'model': model, 'session': model.Session,
                                'user': c.user, 'for_view': True,
                                'auth_user_obj': c.userobj, 'use_cache': False}
 
-                    if(edit_action == 'append'):
+                    if(edit_params['edit_action'] == 'append'):
 
                         new_group = request.POST.get('group')
                         if new_group:
@@ -379,7 +414,7 @@ class EditorController(p.toolkit.BaseController):
                                 get_action('member_create')(context, data_dict)
                             except NotFound:
                                 abort(404, _('Group not found'))
-                    elif(edit_action == 'remove'):
+                    elif(edit_params['edit_action'] == 'remove'):
                         removed_group = request.POST.get('group')
 
                         data_dict = {"id": removed_group,
@@ -394,57 +429,34 @@ class EditorController(p.toolkit.BaseController):
                 # All other types of fields can be updated with package_update
                 else:
                     # Append the new value to the old field value if requested
-                    if(edit_action == 'append'):
+                    if(edit_params['edit_action'] == 'append'):
+                        package = get_appended_value(package, edit_params)
 
-                        # Update dictionary format value if field consists of multiple languages
-                        if(len(languages) > 0 and not format_as_tags):
-                            value = {}
-                            for language in languages:
-                                key = field + '-' + language
-                                language_value =  package[field].get(language) + request.POST[key]
-                                value.update({ language : language_value })
-
-                            package[field] = value
-                        # If the value is tag-like and consists of multiple languages, it need to be formatted as a tag list
-                        elif(len(languages) > 0 and format_as_tags):
-                            value = {}
-                            for language in languages:
-                                key = field + '-' + language
-                                tag_list = request.POST[key].split(",")
-
-                                language_value =  package[field].get(language) + tag_list if package[field].get(language) is not None else tag_list
-                                value.update({ language : language_value })
-
-                            package[field] = value
-                        # Otherwise we can just append the value to the old
-                        else:
-                            package[field] += request.POST[field]
-
-                    elif(edit_action == 'remove'):
+                    elif(edit_params['edit_action'] == 'remove'):
                         log.info("Remove action not supported for other fields than group and collection")
 
                     # Replace the old field value entirely
-                    elif(edit_action == 'replace'):
+                    elif(edit_params['edit_action'] == 'replace'):
                         # If using fluent or fluentall extensions and trying to update multilingual fields
-                        if(len(languages) > 0 and not format_as_tags):
+                        if(len(edit_params['languages']) > 0 and not edit_params['format_as_tags']):
                             value = {}
-                            for language in languages:
-                                key = field + '-' + language
+                            for language in edit_params['languages']:
+                                key = edit_params['field'] + '-' + language
                                 value.update({ language : request.POST[key] })
-                        elif(len(languages) > 0 and format_as_tags):
+                        elif(len(edit_params['languages']) > 0 and edit_params['format_as_tags']):
                             value = {}
-                            for language in languages:
-                                key = field + '-' + language
+                            for language in edit_params['languages']:
+                                key = edit_params['field'] + '-' + language
                                 language_value = request.POST[key].split(",")
                                 value.update({ language : language_value })
 
-                            package[field] = value
+                            package[edit_params['field']] = value
                         else:
-                            value = request.POST[field]
+                            value = request.POST[edit_params['field']]
 
-                        package[field] = value
+                        package[edit_params['field']] = value
                     else:
-                        log.error('Provided edit action "' + edit_action + '" not supported')
+                        log.error('Provided edit action "' + edit_params['edit_action'] + '" not supported')
 
                     toolkit.get_action('package_update')(context, package)
             except NotAuthorized:
@@ -454,5 +466,5 @@ class EditorController(p.toolkit.BaseController):
             except ValidationError:
                 return '{"status":"Conflict", "message":"' + _("Validation error.") + '"}'
 
-        h.redirect_to('/editor?_field=' + field.encode('utf8'))
+        h.redirect_to('/editor?_field=' + edit_params['field'].encode('utf8'))
         return render('editor/editor_base.html')
