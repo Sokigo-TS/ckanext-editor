@@ -430,29 +430,19 @@ class EditorController(p.toolkit.BaseController):
                                'user': c.user, 'for_view': True,
                                'auth_user_obj': c.userobj, 'use_cache': False}
 
-                    if(edit_params['edit_action'] == 'append'):
+                    group_ref = request.POST.get('group')
 
-                        new_group = request.POST.get('group')
-                        if new_group:
-                            data_dict = {"id": new_group,
-                                         "object": id,
-                                         "object_type": 'package',
-                                         "capacity": 'public'}
-                            try:
-                                get_action('member_create')(context, data_dict)
-                            except NotFound:
-                                abort(404, _('Group not found'))
-                    elif(edit_params['edit_action'] == 'remove'):
-                        removed_group = request.POST.get('group')
-
-                        data_dict = {"id": removed_group,
-                                     "object": id,
-                                     "object_type": 'package'}
-
-                        try:
+                    data_dict = {"id": group_ref,
+                                 "object": id,
+                                 "object_type": 'package',
+                                 "capacity": 'public'}
+                    try:
+                        if(edit_params['edit_action'] == 'append'):
+                            get_action('member_create')(context, data_dict)
+                        elif(edit_params['edit_action'] == 'remove'):
                             get_action('member_delete')(context, data_dict)
-                        except NotFound:
-                            abort(404, _('Group not found'))
+                    except NotFound:
+                        abort(404, _('Group not found'))
 
                 # All other types of fields can be updated with package_update
                 else:
