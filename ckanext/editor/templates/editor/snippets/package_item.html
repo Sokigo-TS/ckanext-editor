@@ -36,11 +36,9 @@ Example:
                         {% endif %}
                         {% if not loop.last %}<hr>{% endif %}
                     {% endfor %}
-                <!-- Normal CKAN tag_string without multilingual support -->
-                {% elif c.selected_field.field_name == 'tag_string' %}
-                    {% for item in package['tags'] %}
-                        {{item.name}}{% if not loop.last %}, {% endif %}
-                    {% endfor %}
+                <!-- Normal CKAN tag_string-like list without multilingual support -->
+                {% elif package[c.selected_field.field_name] is iterable and package[c.selected_field.field_name] is not string %}
+                    {{ package[c.selected_field.field_name] | join(', ')}}
                 {% elif c.selected_field.field_name == 'owner_org' %}
                     {{ package['organization'].title }}
                 {% elif c.selected_field.field_name == 'private' %}

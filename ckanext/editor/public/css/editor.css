@@ -1,4 +1,8 @@
-.table td.condensed, 
+.editor-form .form-actions {
+    margin-top: 10px;
+}
+
+.table td.condensed,
 .table th.condensed {
     white-space: nowrap;
     width: 29px;
