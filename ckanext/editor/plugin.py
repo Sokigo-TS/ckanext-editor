@@ -1,11 +1,13 @@
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan.lib.plugins import DefaultTranslation
+from ckanext.editor import helpers
 
 
 class EditorPlugin(plugins.SingletonPlugin, DefaultTranslation):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IConfigurable)
+    plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.IRoutes, inherit=True)
     if toolkit.check_ckan_version(min_version='2.5.0'):
         plugins.implements(plugins.ITranslation, inherit=True)
@@ -35,6 +37,9 @@ class EditorPlugin(plugins.SingletonPlugin, DefaultTranslation):
                         key
                     )
                 )
+
+    def get_helpers(self):
+        return { 'get_group_names_for_package': helpers.get_group_names_for_package }
 
     # IRoutes
 

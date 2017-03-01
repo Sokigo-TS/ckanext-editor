@@ -36,13 +36,15 @@ Example:
                         {% endif %}
                         {% if not loop.last %}<hr>{% endif %}
                     {% endfor %}
+                {% elif c.selected_field.field_name == 'group' or c.selected_field.field_name == 'collection'  %}
+                  {{ h.get_group_names_for_package(package['id'], c.selected_field.field_name) | join(', ')}}
+                {% elif c.selected_field.field_name == 'owner_org' %}
+                  {{ package['organization'].title }}
+                {% elif c.selected_field.field_name == 'private' %}
+                  {{ _('Private') if package[c.selected_field.field_name] else _('Public') }}
                 <!-- Normal CKAN tag_string-like list without multilingual support -->
                 {% elif package[c.selected_field.field_name] is iterable and package[c.selected_field.field_name] is not string %}
                     {{ package[c.selected_field.field_name] | join(', ')}}
-                {% elif c.selected_field.field_name == 'owner_org' %}
-                    {{ package['organization'].title }}
-                {% elif c.selected_field.field_name == 'private' %}
-                    {{ _('Private') if package[c.selected_field.field_name] else _('Public') }}
                 {% else %}
                     {{ package[c.selected_field.field_name] }}
                 {% endif %}
