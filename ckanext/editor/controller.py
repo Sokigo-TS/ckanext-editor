@@ -87,7 +87,9 @@ def replace_package_value(package, edit_params):
         value = {}
         for language in languages:
             key = field + '-' + language
-            language_value = request.POST[key].split(",")
+
+            # Replace old value with an empty list if a tag was not entered
+            language_value = request.POST[key].split(",")  if len(request.POST[key]) > 0 else []
             value.update({ language : language_value })
 
         package[field] = value
