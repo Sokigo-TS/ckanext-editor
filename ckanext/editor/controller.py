@@ -54,13 +54,15 @@ def append_package_value(package, edit_params):
         package[field] = value
     # If the value is tag-like and consists of multiple languages, it need to be formatted as a tag list
     elif(len(languages) > 0 and format_as_tags):
-        value = {}
+        value = package[field]
         for language in languages:
             key = field + '-' + language
-            tag_list = request.POST[key].split(",")
+            tag_list = request.POST[key].split(",") if len(request.POST[key]) > 0 else None
 
-            language_value = package[field].get(language) + tag_list if package[field].get(language) is not None else tag_list
-            value.update({ language : language_value })
+            # Add tags for this language only if any exist or the validation will fail later
+            if tag_list:
+                language_value = package[field].get(language) + tag_list if package[field].get(language) is not None else tag_list
+                value.update({ language : language_value })
 
         package[field] = value
     # Otherwise we can just append the value to the old
