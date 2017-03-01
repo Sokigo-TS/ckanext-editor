@@ -65,6 +65,8 @@ def append_package_value(package, edit_params):
                 value.update({ language : language_value })
 
         package[field] = value
+    elif edit_params['field_value']:
+        package[field] += edit_params['field_value']
     # Otherwise we can just append the value to the old
     else:
         package[field] += request.POST[field]
@@ -93,6 +95,8 @@ def replace_package_value(package, edit_params):
             value.update({ language : language_value })
 
         package[field] = value
+    elif edit_params['field_value']:
+        value = edit_params['field_value']
     else:
         value = request.POST[field]
 
@@ -417,6 +421,15 @@ class EditorController(p.toolkit.BaseController):
                 'format_as_tags': ast.literal_eval(request.POST['format_as_tags']),
                 'languages': ast.literal_eval(request.POST['form_languages'].encode('utf8'))
             }
+
+            # External_urls field needs to be handled separately since it can contain multiple
+            # values with the same key
+            values = []
+            if(edit_params['field'] == 'external_urls'):
+                for k, v in request.POST.iteritems():
+                    if k == 'external_urls':
+                        values.append(v)
+                edit_params['field_value'] = values
 
         except ValidationError:
             return '{"status":"Conflict", "message":"' + _("Validation error.") + '"}'
