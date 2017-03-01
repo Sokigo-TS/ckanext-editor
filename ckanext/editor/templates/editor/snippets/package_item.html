@@ -23,10 +23,20 @@ Example:
         <td class="condensed">{{ h.link_to(h.truncate(title, truncate_title), h.url_for(controller='package', action='read', id=package.name)) }}</td>
         <td class="field-value-column">
             <div class="column-content">
+                <!-- Display multilingual fields -->
                 {% if package[c.selected_field.field_name] is mapping %}
                     {% for key, value in package[c.selected_field.field_name].iteritems() %}
-                        <b>{{key}}:</b> {{value}} {% if not loop.last %}<hr>{% endif %}
+                        <b>{{key}}:</b>
+                        <!-- Value is formatted as multilingual tags -->
+                        {% if c.selected_field['format_as_tags'] %}
+                            {{value | join(', ')}}
+                        <!-- Otherwise the value is just multilingual text -->
+                        {% else %}
+                            {{value}}
+                        {% endif %}
+                        {% if not loop.last %}<hr>{% endif %}
                     {% endfor %}
+                <!-- Normal CKAN tag_string without multilingual support -->
                 {% elif c.selected_field.field_name == 'tag_string' %}
                     {% for item in package['tags'] %}
                         {{item.name}}{% if not loop.last %}, {% endif %}
