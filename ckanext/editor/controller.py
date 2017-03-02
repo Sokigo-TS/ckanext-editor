@@ -65,7 +65,7 @@ def append_package_value(package, edit_params):
                 value.update({ language : language_value })
 
         package[field] = value
-    elif edit_params['field_value']:
+    elif edit_params.get('field_value'):
         package[field] += edit_params['field_value']
     # Otherwise we can just append the value to the old
     else:
@@ -95,7 +95,7 @@ def replace_package_value(package, edit_params):
             value.update({ language : language_value })
 
         package[field] = value
-    elif edit_params['field_value']:
+    elif edit_params.get('field_value'):
         value = edit_params['field_value']
     else:
         value = request.POST[field]
