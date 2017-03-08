@@ -16,10 +16,11 @@
 }
 
 .editor-form .field-value-column {
-    max-height: 200px;
-    overflow: auto;
+    max-height: 300px;
 }
 
 .editor-form .field-value-column .column-content {
-    max-height: 200px;
+    max-height: 300px;
+    width: 100%;
+    overflow-y: scroll;
 }
