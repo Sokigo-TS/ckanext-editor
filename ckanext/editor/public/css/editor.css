@@ -2,17 +2,24 @@
     margin-top: 10px;
 }
 
-.table td.condensed,
-.table th.condensed {
-    white-space: nowrap;
-    width: 29px;
+.editor-form .table thead tr td,
+.editor-form .table tbody tr td
+.editor-form .table thead tr th,
+.editor-form .table tbody tr th {
+    width: auto;
 }
 
-.field-value-column {
+.editor-form th.condensed,
+.editor-form td.condensed {
+    width: 1%;
+    white-space: nowrap;
+}
+
+.editor-form .field-value-column {
     max-height: 200px;
     overflow: auto;
 }
 
-.field-value-column .column-content {
+.editor-form .field-value-column .column-content {
     max-height: 200px;
 }
