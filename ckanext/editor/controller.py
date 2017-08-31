@@ -191,7 +191,7 @@ class EditorController(p.toolkit.BaseController):
 
     def package_search(self):
         if not authz.is_sysadmin(c.user):
-            return '{"status":"Not Authorized", "message":"' + _("Access denied.") + '"}'
+            return abort(403, _('Not authorized to see this page'))
 
         # Gather extension specific search parameters etc.
         c.editable_fields = self.get_editable_fields()
@@ -411,7 +411,7 @@ class EditorController(p.toolkit.BaseController):
         edit_params = {}
 
         if not authz.is_sysadmin(c.user):
-            return '{"status":"Not Authorized", "message":"' + _("Access denied.") + '"}'
+            abort(403, _('Not authorized to see this page'))
 
         try:
             edit_params = {
@@ -432,9 +432,9 @@ class EditorController(p.toolkit.BaseController):
                 edit_params['field_value'] = values
 
         except ValidationError:
-            return '{"status":"Conflict", "message":"' + _("Validation error.") + '"}'
+            return abort(409, _('Validation error'))
         except KeyError:
-            return '{"status":"Bad request", "message":"' + _("Key error.") + '"}'
+            return abort(400, _('Key error'))
 
         for id in edit_params['package_ids']:
             try:
@@ -476,11 +476,11 @@ class EditorController(p.toolkit.BaseController):
 
                     toolkit.get_action('package_update')(context, package)
             except NotAuthorized:
-                return '{"status":"Not Authorized", "message":"' + _("Access denied.") + '"}'
+                return abort(403, _('Not authorized to see this page'))
             except NotFound:
-                return '{"status":"Not Found", "message":"' + _("Package not found.") + '"}'
+                return abort(404, _('Package not found'))
             except ValidationError:
-                return '{"status":"Conflict", "message":"' + _("Validation error.") + '"}'
+                return abort(409, _('Validation error'))
 
         h.redirect_to('/editor?_field=' + edit_params['field'].encode('utf8'))
         return render('editor/editor_base.html')
