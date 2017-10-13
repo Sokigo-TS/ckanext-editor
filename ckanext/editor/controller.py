@@ -395,9 +395,6 @@ class EditorController(p.toolkit.BaseController):
                       parameter_name='_%s_limit' % facet))
             c.search_facets_limits[facet] = limit
 
-        maintain.deprecate_context_item(
-            'facets',
-            'Use `c.search_facets` instead.')
 
         self._setup_template_variables(context, {},
                                        package_type=package_type)
@@ -482,5 +479,5 @@ class EditorController(p.toolkit.BaseController):
             except ValidationError:
                 return abort(409, _('Validation error'))
 
-        h.redirect_to('/editor?_field=' + edit_params['field'].encode('utf8'))
+        h.redirect_to(controller='ckanext.editor.controller:EditorController', action='package_search', _field=edit_params['field'].encode('utf8'))
         return render('editor/editor_base.html')
