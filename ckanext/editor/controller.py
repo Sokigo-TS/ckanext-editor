@@ -69,7 +69,10 @@ def append_package_value(package, edit_params):
         package[field] += edit_params['field_value']
     # Otherwise we can just append the value to the old
     else:
-        package[field] += request.POST[field]
+        if field not in package:
+            package[field] = request.POST[field]
+        else:
+            package[field] += request.POST[field]
 
     return package
 
@@ -404,7 +407,7 @@ class EditorController(p.toolkit.BaseController):
 
 
     def package_update(self):
-        context = {'model': model, 'user': c.user, 'auth_user_obj': c.userobj}
+        context = {'model': model, 'user': c.user, 'auth_user_obj': c.userobj, 'keep_deletable_attributes_in_api': True}
         edit_params = {}
 
         if not authz.is_sysadmin(c.user):
