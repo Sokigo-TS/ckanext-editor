@@ -1,4 +1,5 @@
 {% extends 'page.html' %}
+{% import 'macros/form.html' as form %}
 
 {% block primary_content_inner %}
 
@@ -7,6 +8,7 @@
 
   <section class="module">
     <div class="module-content">
+      {% set sorting = [(_('Name Ascending'), 'title asc'), (_('Name Descending'), 'title desc')] %}
       {% snippet 'snippets/search_form.html', form_id='dataset-search-form', type='dataset', query=c.q, sorting=sorting, sorting_selected=c.sort_by_selected, count=c.page.item_count, facets=facets, show_empty=request.params, error=c.query_error, fields=c.fields %}
 
       <form action="editor/package_update" method="post" enctype="application/x-www-form-urlencoded" class="editor-form">
@@ -39,6 +41,9 @@
 
         <input type="hidden" name="format_as_tags" value="{{c.selected_field['format_as_tags']}}">
         <input type="hidden" name="form_languages" value="{{c.selected_field['form_languages']}}">
+        {% if c.fields -%}
+        <span>{{ form.hidden_from_list(fields=c.fields) }}</span>
+        {%- endif %}
         <div class="form-actions">
           <button type="submit" id="editor-form-submit" class="btn btn-primary">{{_('Save')}}</button>
         </div>

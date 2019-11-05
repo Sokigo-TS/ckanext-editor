@@ -272,6 +272,8 @@ class EditorController(p.toolkit.BaseController):
             if fields:
                 sort_string = ', '.join('%s %s' % f for f in fields)
                 params.append(('sort', sort_string))
+            else:
+                params.append(('sort', 'title asc'))
             return search_url(params)
 
         c.sort_by = _sort_by
@@ -425,7 +427,7 @@ class EditorController(p.toolkit.BaseController):
             # External_urls field needs to be handled separately since it can contain multiple
             # values with the same key
             values = []
-            if(edit_params['field'] == 'external_urls'):
+            if edit_params['field'] == 'external_urls':
                 for k, v in request.POST.iteritems():
                     if k == 'external_urls':
                         values.append(v)
@@ -482,5 +484,25 @@ class EditorController(p.toolkit.BaseController):
             except ValidationError:
                 return abort(409, _('Validation error'))
 
-        h.redirect_to(controller='ckanext.editor.controller:EditorController', action='package_search', _field=edit_params['field'].encode('utf8'))
+        formats = []
+        coverages = []
+        groups = []
+        organizations = []
+        collections = []
+        for k, v in request.params.iteritems():
+            if k == 'res_format':
+                formats.append(v)
+            elif k == 'vocab_geographical_coverage':
+                coverages.append(v)
+            elif k == 'groups':
+                groups.append(v)
+            elif k == 'organization':
+                organizations.append(v)
+            elif k == 'collections':
+                collections.append(v)
+
+        h.redirect_to(controller='ckanext.editor.controller:EditorController', action='package_search',
+                      _field=edit_params['field'].encode('utf8'), res_format=formats,
+                      vocab_geographical_coverage=coverages, groups=groups, organization=organizations,
+                      collections=collections)
         return render('editor/editor_base.html')
