@@ -504,5 +504,5 @@ class EditorController(p.toolkit.BaseController):
         h.redirect_to(controller='ckanext.editor.controller:EditorController', action='package_search',
                       _field=edit_params['field'].encode('utf8'), res_format=formats,
                       vocab_geographical_coverage=coverages, groups=groups, organization=organizations,
-                      collections=collections)
+                      collections=collections, q=request.params.get('q', u''), sort=request.params.get('sort', u''))
         return render('editor/editor_base.html')

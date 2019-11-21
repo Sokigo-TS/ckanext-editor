@@ -13,6 +13,9 @@
 
       <form action="editor/package_update" method="post" enctype="application/x-www-form-urlencoded" class="editor-form">
 
+        {{ form.hidden('q', c.q) }}
+        {{ form.hidden('sort', c.sort_by_selected) }}
+
         {% block field_select %}
             {%- snippet 'editor/snippets/field_select.html' -%}
         {% endblock  %}
