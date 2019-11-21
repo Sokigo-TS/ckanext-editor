@@ -76,6 +76,7 @@ def append_package_value(package, edit_params):
 
     return package
 
+
 def replace_package_value(package, edit_params):
     field = edit_params.get('field')
     languages = edit_params.get('languages')
@@ -108,6 +109,208 @@ def replace_package_value(package, edit_params):
     return package
 
 class EditorController(p.toolkit.BaseController):
+
+    def _selected_field(self):
+
+        # Gather extension specific search parameters etc.
+        c.editable_fields = self.get_editable_fields()
+
+        # Set default field to selection
+        default_field = request.params.get('_field') if request.params.get('_field') else config.get('ckanext.editor.default_field')
+        c.selected_field = {}
+        for field in c.editable_fields:
+            if field.get('field_name') == default_field:
+                c.selected_field = field
+
+        # Check if the currently selected field type has a type of value that can be appended by a newly entered value
+        # Groups and certain other fields are always appendable but not replaceable
+        if c.selected_field.get('field_name') in config.get('ckanext.editor.appendable_fields') \
+                or c.selected_field.get('field_name') == 'group' \
+                or c.selected_field.get('field_name') == 'collection':
+            c.selected_field_appendable = True
+        else:
+            c.selected_field_appendable = False
+
+    def _search(self):
+        # The search functionality is similar to CKAN package search in ckan/controllers/package.py
+        # This might need updating if the core package search functionality is changed after v2.5
+        from ckan.lib.search import SearchError, SearchQueryError
+
+        package_type = 'dataset'
+
+        # unicode format (decoded from utf8)
+        q = c.q = request.params.get('q', u'')
+        c.query_error = False
+
+        try:
+            page = self._get_page_number(request.params)
+        except AttributeError:
+            # in CKAN >= 2.5 _get_page_number has been moved
+            page = h.get_page_number(request.params)
+
+        limit = int(config.get('ckan.datasets_per_page', 20))
+
+        # most search operations should reset the page counter:
+        params_nopage = [(k, v) for k, v in request.params.items()
+                         if k != 'page']
+
+        def drill_down_url(alternative_url=None, **by):
+            return h.add_url_param(alternative_url=alternative_url,
+                                   controller='package', action='search',
+                                   new_params=by)
+
+        c.drill_down_url = drill_down_url
+
+        def remove_field(key, value=None, replace=None):
+            return h.remove_url_param(key, value=value, replace=replace,
+                                      controller='package', action='search')
+
+        c.remove_field = remove_field
+
+        sort_by = request.params.get('sort', None)
+        params_nosort = [(k, v) for k, v in params_nopage if k != 'sort']
+
+        def _sort_by(fields):
+            """
+            Sort by the given list of fields.
+            Each entry in the list is a 2-tuple: (fieldname, sort_order)
+            eg - [('metadata_modified', 'desc'), ('name', 'asc')]
+            If fields is empty, then the default ordering is used.
+            """
+            params = params_nosort[:]
+
+            if fields:
+                sort_string = ', '.join('%s %s' % f for f in fields)
+                params.append(('sort', sort_string))
+            else:
+                params.append(('sort', 'title asc'))
+            return search_url(params)
+
+        c.sort_by = _sort_by
+        if not sort_by:
+            c.sort_by_fields = []
+        else:
+            c.sort_by_fields = [field.split()[0]
+                                for field in sort_by.split(',')]
+
+        def pager_url(q=None, page=None):
+            params = list(params_nopage)
+            params.append(('page', page))
+            return search_url(params)
+
+        c.search_url_params = urlencode(_encode_params(params_nopage))
+
+        try:
+            c.fields = []
+            # c.fields_grouped will contain a dict of params containing
+            # a list of values eg {'tags':['tag1', 'tag2']}
+            c.fields_grouped = {}
+            search_extras = {}
+            fq = ''
+            for (param, value) in request.params.items():
+                if param not in ['q', 'page', 'sort', 'form_languages', 'edit_action', 'field', 'format_as_tags', 'package_id'] \
+                        and len(value) and not param.startswith('_'):
+                    if not param.startswith('ext_'):
+                        c.fields.append((param, value))
+                        fq += ' %s:"%s"' % (param, value)
+                        if param not in c.fields_grouped:
+                            c.fields_grouped[param] = [value]
+                        else:
+                            c.fields_grouped[param].append(value)
+                    else:
+                        search_extras[param] = value
+
+            context = {'model': model, 'session': model.Session,
+                       'user': c.user, 'for_view': True,
+                       'auth_user_obj': c.userobj}
+
+            if package_type and package_type != 'dataset':
+                # Only show datasets of this particular type
+                fq += ' +dataset_type:{type}'.format(type=package_type)
+            else:
+                # Unless changed via config options, don't show non standard
+                # dataset types on the default search page
+                if not asbool(
+                        config.get('ckan.search.show_all_types', 'False')):
+                    fq += ' +dataset_type:dataset'
+
+            facets = OrderedDict()
+
+            default_facet_titles = {
+                'organization': _('Organizations'),
+                'groups': _('Groups'),
+                'tags': _('Tags'),
+                'res_format': _('Formats'),
+                'license_id': _('Licenses'),
+            }
+
+            for facet in h.facets():
+                if facet in default_facet_titles:
+                    facets[facet] = default_facet_titles[facet]
+                else:
+                    facets[facet] = facet
+
+            # Facet titles
+            for plugin in p.PluginImplementations(p.IFacets):
+                facets = plugin.dataset_facets(facets, package_type)
+
+            c.facet_titles = facets
+
+            data_dict = {
+                'q': q,
+                'fq': fq.strip(),
+                'facet.field': facets.keys(),
+                'rows': limit,
+                'start': (page - 1) * limit,
+                'sort': sort_by,
+                'extras': search_extras,
+            }
+
+            log.info(data_dict)
+            # Include private is added in CKAN v2.6
+            if(toolkit.check_ckan_version('2.6')):
+                data_dict['include_private'] = True
+
+            query = get_action('package_search')(context, data_dict)
+            c.sort_by_selected = query['sort']
+
+            c.page = h.Page(
+                collection=query['results'],
+                page=page,
+                url=pager_url,
+                item_count=query['count'],
+                items_per_page=limit
+            )
+            c.facets = query['facets']
+            c.search_facets = query['search_facets']
+            c.page.items = query['results']
+        except SearchQueryError, se:
+            # User's search parameters are invalid, in such a way that is not
+            # achievable with the web interface, so return a proper error to
+            # discourage spiders which are the main cause of this.
+            log.info('Dataset search query rejected: %r', se.args)
+            abort(400, _('Invalid search query: {error_message}')
+                  .format(error_message=str(se)))
+        except SearchError, se:
+            # May be bad input from the user, but may also be more serious like
+            # bad code causing a SOLR syntax error, or a problem connecting to
+            # SOLR
+            log.error('Dataset search error: %r', se.args)
+            c.query_error = True
+            c.facets = {}
+            c.search_facets = {}
+            c.page = h.Page(collection=[])
+        c.search_facets_limits = {}
+        for facet in c.search_facets.keys():
+            try:
+                limit = int(request.params.get('_%s_limit' % facet,
+                                               int(config.get('search.facets.default', 10))))
+            except ValueError:
+                abort(400, _('Parameter "{parameter_name}" is not '
+                             'an integer').format(
+                    parameter_name='_%s_limit' % facet))
+            c.search_facets_limits[facet] = limit
+
 
     def _setup_template_variables(self, context, data_dict, package_type=None):
         return lookup_package_plugin(package_type).\
@@ -192,34 +395,14 @@ class EditorController(p.toolkit.BaseController):
 
         return fields
 
-    def package_search(self):
+    def package_search(self, errors=None, error_summary=None):
         if not authz.is_sysadmin(c.user):
             return abort(403, _('Not authorized to see this page'))
 
         # Gather extension specific search parameters etc.
         c.editable_fields = self.get_editable_fields()
 
-        # Set default field to selection
-        default_field = request.params.get('_field') if request.params.get('_field') else config.get('ckanext.editor.default_field')
-        c.selected_field = {}
-        for field in c.editable_fields:
-            if(field.get('field_name') == default_field):
-                c.selected_field = field
-
-        # Check if the currently selected field type has a type of value that can be appended by a newly entered value
-        # Groups and certain other fields are always appendable but not replaceable
-        if c.selected_field.get('field_name') in config.get('ckanext.editor.appendable_fields') \
-                or c.selected_field.get('field_name') == 'group' \
-                or c.selected_field.get('field_name') == 'collection':
-            c.selected_field_appendable = True
-        else:
-            c.selected_field_appendable = False
-
-        # The search functionality is similar to CKAN package search in ckan/controllers/package.py
-        # This might need updating if the core package search functionality is changed after v2.5
-        from ckan.lib.search import SearchError, SearchQueryError
-
-        package_type = 'dataset'
+        self._selected_field()
 
         try:
             context = {'model': model, 'user': c.user,
@@ -228,184 +411,15 @@ class EditorController(p.toolkit.BaseController):
         except NotAuthorized:
             abort(403, _('Not authorized to see this page'))
 
-        # unicode format (decoded from utf8)
-        q = c.q = request.params.get('q', u'')
-        c.query_error = False
+        package_type = 'dataset'
 
-        try:
-            page = self._get_page_number(request.params)
-        except AttributeError:
-            # in CKAN >= 2.5 _get_page_number has been moved
-            page = h.get_page_number(request.params)
-
-        limit = int(config.get('ckan.datasets_per_page', 20))
-
-        # most search operations should reset the page counter:
-        params_nopage = [(k, v) for k, v in request.params.items()
-                         if k != 'page']
-
-        def drill_down_url(alternative_url=None, **by):
-            return h.add_url_param(alternative_url=alternative_url,
-                                   controller='package', action='search',
-                                   new_params=by)
-
-        c.drill_down_url = drill_down_url
-
-        def remove_field(key, value=None, replace=None):
-            return h.remove_url_param(key, value=value, replace=replace,
-                                      controller='package', action='search')
-
-        c.remove_field = remove_field
-
-        sort_by = request.params.get('sort', None)
-        params_nosort = [(k, v) for k, v in params_nopage if k != 'sort']
-
-        def _sort_by(fields):
-            """
-            Sort by the given list of fields.
-            Each entry in the list is a 2-tuple: (fieldname, sort_order)
-            eg - [('metadata_modified', 'desc'), ('name', 'asc')]
-            If fields is empty, then the default ordering is used.
-            """
-            params = params_nosort[:]
-
-            if fields:
-                sort_string = ', '.join('%s %s' % f for f in fields)
-                params.append(('sort', sort_string))
-            else:
-                params.append(('sort', 'title asc'))
-            return search_url(params)
-
-        c.sort_by = _sort_by
-        if not sort_by:
-            c.sort_by_fields = []
-        else:
-            c.sort_by_fields = [field.split()[0]
-                                for field in sort_by.split(',')]
-
-        def pager_url(q=None, page=None):
-            params = list(params_nopage)
-            params.append(('page', page))
-            return search_url(params)
-
-        c.search_url_params = urlencode(_encode_params(params_nopage))
-
-        try:
-            c.fields = []
-            # c.fields_grouped will contain a dict of params containing
-            # a list of values eg {'tags':['tag1', 'tag2']}
-            c.fields_grouped = {}
-            search_extras = {}
-            fq = ''
-            for (param, value) in request.params.items():
-                if param not in ['q', 'page', 'sort'] \
-                        and len(value) and not param.startswith('_'):
-                    if not param.startswith('ext_'):
-                        c.fields.append((param, value))
-                        fq += ' %s:"%s"' % (param, value)
-                        if param not in c.fields_grouped:
-                            c.fields_grouped[param] = [value]
-                        else:
-                            c.fields_grouped[param].append(value)
-                    else:
-                        search_extras[param] = value
-
-            context = {'model': model, 'session': model.Session,
-                       'user': c.user, 'for_view': True,
-                       'auth_user_obj': c.userobj}
-
-            if package_type and package_type != 'dataset':
-                # Only show datasets of this particular type
-                fq += ' +dataset_type:{type}'.format(type=package_type)
-            else:
-                # Unless changed via config options, don't show non standard
-                # dataset types on the default search page
-                if not asbool(
-                        config.get('ckan.search.show_all_types', 'False')):
-                    fq += ' +dataset_type:dataset'
-
-            facets = OrderedDict()
-
-            default_facet_titles = {
-                'organization': _('Organizations'),
-                'groups': _('Groups'),
-                'tags': _('Tags'),
-                'res_format': _('Formats'),
-                'license_id': _('Licenses'),
-                }
-
-            for facet in h.facets():
-                if facet in default_facet_titles:
-                    facets[facet] = default_facet_titles[facet]
-                else:
-                    facets[facet] = facet
-
-            # Facet titles
-            for plugin in p.PluginImplementations(p.IFacets):
-                facets = plugin.dataset_facets(facets, package_type)
-
-            c.facet_titles = facets
-
-            data_dict = {
-                'q': q,
-                'fq': fq.strip(),
-                'facet.field': facets.keys(),
-                'rows': limit,
-                'start': (page - 1) * limit,
-                'sort': sort_by,
-                'extras': search_extras,
-            }
-
-            # Include private is added in CKAN v2.6
-            if(toolkit.check_ckan_version('2.6')):
-                data_dict['include_private'] = True
-
-            query = get_action('package_search')(context, data_dict)
-            c.sort_by_selected = query['sort']
-
-            c.page = h.Page(
-                collection=query['results'],
-                page=page,
-                url=pager_url,
-                item_count=query['count'],
-                items_per_page=limit
-            )
-            c.facets = query['facets']
-            c.search_facets = query['search_facets']
-            c.page.items = query['results']
-        except SearchQueryError, se:
-            # User's search parameters are invalid, in such a way that is not
-            # achievable with the web interface, so return a proper error to
-            # discourage spiders which are the main cause of this.
-            log.info('Dataset search query rejected: %r', se.args)
-            abort(400, _('Invalid search query: {error_message}')
-                  .format(error_message=str(se)))
-        except SearchError, se:
-            # May be bad input from the user, but may also be more serious like
-            # bad code causing a SOLR syntax error, or a problem connecting to
-            # SOLR
-            log.error('Dataset search error: %r', se.args)
-            c.query_error = True
-            c.facets = {}
-            c.search_facets = {}
-            c.page = h.Page(collection=[])
-        c.search_facets_limits = {}
-        for facet in c.search_facets.keys():
-            try:
-                limit = int(request.params.get('_%s_limit' % facet,
-                                               int(config.get('search.facets.default', 10))))
-            except ValueError:
-                abort(400, _('Parameter "{parameter_name}" is not '
-                             'an integer').format(
-                      parameter_name='_%s_limit' % facet))
-            c.search_facets_limits[facet] = limit
-
+        self._search()
 
         self._setup_template_variables(context, {},
                                        package_type=package_type)
 
         return render(self._search_template(package_type),
-                      extra_vars={'dataset_type': package_type})
+                      extra_vars={'dataset_type': package_type, 'errors': errors, 'error_summary': error_summary})
 
 
     def package_update(self):
@@ -435,8 +449,25 @@ class EditorController(p.toolkit.BaseController):
 
         except ValidationError:
             return abort(409, _('Validation error'))
-        except KeyError:
-            return abort(400, _('Key error'))
+        except KeyError as e:
+            h.redirect_to(controller='ckanext.editor.controller:EditorController', action='package_search', **request.params)
+
+        formats = []
+        coverages = []
+        groups = []
+        organizations = []
+        collections = []
+        for k, v in request.params.iteritems():
+            if k == 'res_format':
+                formats.append(v)
+            elif k == 'vocab_geographical_coverage':
+                coverages.append(v)
+            elif k == 'groups':
+                groups.append(v)
+            elif k == 'organization':
+                organizations.append(v)
+            elif k == 'collections':
+                collections.append(v)
 
         for id in edit_params['package_ids']:
             try:
@@ -481,28 +512,15 @@ class EditorController(p.toolkit.BaseController):
                 return abort(403, _('Not authorized to see this page'))
             except NotFound:
                 return abort(404, _('Package not found'))
-            except ValidationError:
-                return abort(409, _('Validation error'))
+            except ValidationError as e:
+                errors = e.error_dict
+                error_summary = e.error_summary
+                self._selected_field()
 
-        formats = []
-        coverages = []
-        groups = []
-        organizations = []
-        collections = []
-        for k, v in request.params.iteritems():
-            if k == 'res_format':
-                formats.append(v)
-            elif k == 'vocab_geographical_coverage':
-                coverages.append(v)
-            elif k == 'groups':
-                groups.append(v)
-            elif k == 'organization':
-                organizations.append(v)
-            elif k == 'collections':
-                collections.append(v)
+                self._search()
+                return render('editor/editor_base.html', extra_vars={"errors": errors, "error_summary": error_summary})
 
         h.redirect_to(controller='ckanext.editor.controller:EditorController', action='package_search',
                       _field=edit_params['field'].encode('utf8'), res_format=formats,
                       vocab_geographical_coverage=coverages, groups=groups, organization=organizations,
                       collections=collections, q=request.params.get('q', u''), sort=request.params.get('sort', u''))
-        return render('editor/editor_base.html')
