@@ -3,17 +3,21 @@
 # This file is distributed under the same license as the ckanext-editor project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
 # 
+# Translators:
+# Mikko Nieminen <mikko.nieminen@gofore.com>, 2016
+# Hami Kekkonen <hami.kekkonen@hel.fi>, 2019
+# 
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: ckanext-editor 0.0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2017-01-03 12:01+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Mikko Nieminen <mikko.nieminen@gofore.com>, 2016\n"
+"PO-Revision-Date: 2016-11-18 12:48+0000\n"
+"Last-Translator: Hami Kekkonen <hami.kekkonen@hel.fi>, 2019\n"
 "Language-Team: English (United Kingdom) (https://www.transifex.com/6aika-dataportal/teams/68018/en_GB/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.3.4\n"
 "Language: en_GB\n"
@@ -82,7 +86,7 @@ msgstr ""
 
 #: ckanext/editor/templates/editor/editor_base.html:35
 msgid "The entered field value will replace the old value if it exists"
-msgstr ""
+msgstr "The entered value will replace the old value if it exists."
 
 #: ckanext/editor/templates/editor/editor_base.html:40
 msgid "Save"
