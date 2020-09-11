@@ -1,14 +1,14 @@
 # Translations template for ckanext-editor.
-# Copyright (C) 2017 ORGANIZATION
+# Copyright (C) 2020 ORGANIZATION
 # This file is distributed under the same license as the ckanext-editor project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: ckanext-editor 0.0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-01-03 12:01+0000\n"
+"POT-Creation-Date: 2020-09-11 11:33+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,88 +17,100 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.3.4\n"
 
-#: ckanext/editor/controller.py:124 ckanext/editor/controller.py:343
-#: ckanext/editor/controller.py:426
-msgid "Access denied."
-msgstr ""
-
-#: ckanext/editor/controller.py:156
-msgid "Not authorized to see this page"
-msgstr ""
-
-#: ckanext/editor/controller.py:255
+#: ckanext/editor/controller.py:240
 msgid "Organizations"
 msgstr ""
 
-#: ckanext/editor/controller.py:256
+#: ckanext/editor/controller.py:241
 msgid "Groups"
 msgstr ""
 
-#: ckanext/editor/controller.py:257
+#: ckanext/editor/controller.py:242
 msgid "Tags"
 msgstr ""
 
-#: ckanext/editor/controller.py:258
+#: ckanext/editor/controller.py:243
 msgid "Formats"
 msgstr ""
 
-#: ckanext/editor/controller.py:259
+#: ckanext/editor/controller.py:244
 msgid "Licenses"
 msgstr ""
 
-#: ckanext/editor/controller.py:306
+#: ckanext/editor/controller.py:292
 msgid "Invalid search query: {error_message}"
 msgstr ""
 
-#: ckanext/editor/controller.py:323
+#: ckanext/editor/controller.py:309
 msgid "Parameter \"{parameter_name}\" is not an integer"
 msgstr ""
 
-#: ckanext/editor/controller.py:353 ckanext/editor/controller.py:430
-msgid "Validation error."
+#: ckanext/editor/controller.py:400 ckanext/editor/controller.py:412
+#: ckanext/editor/controller.py:430 ckanext/editor/controller.py:512
+msgid "Not authorized to see this page"
 msgstr ""
 
-#: ckanext/editor/controller.py:377 ckanext/editor/controller.py:388
+#: ckanext/editor/controller.py:451
+msgid "Validation error"
+msgstr ""
+
+#: ckanext/editor/controller.py:495
 msgid "Group not found"
 msgstr ""
 
-#: ckanext/editor/controller.py:428
-msgid "Package not found."
+#: ckanext/editor/controller.py:514
+msgid "Package not found"
 msgstr ""
 
-#: ckanext/editor/templates/editor/editor_base.html:21
+#: ckanext/editor/helpers.py:23
+msgid "Dataset not found"
+msgstr ""
+
+#: ckanext/editor/templates/editor/editor_base.html:14
+msgid "Newest first"
+msgstr ""
+
+#: ckanext/editor/templates/editor/editor_base.html:14
+msgid "Name Ascending"
+msgstr ""
+
+#: ckanext/editor/templates/editor/editor_base.html:14
+msgid "Name Descending"
+msgstr ""
+
+#: ckanext/editor/templates/editor/editor_base.html:29
 msgid "Add entered value to old values"
 msgstr ""
 
-#: ckanext/editor/templates/editor/editor_base.html:26
+#: ckanext/editor/templates/editor/editor_base.html:34
 msgid "Replace old value with the entered value"
 msgstr ""
 
-#: ckanext/editor/templates/editor/editor_base.html:31
+#: ckanext/editor/templates/editor/editor_base.html:39
 msgid "Remove entered value if found"
 msgstr ""
 
-#: ckanext/editor/templates/editor/editor_base.html:35
+#: ckanext/editor/templates/editor/editor_base.html:43
 msgid "The entered field value will replace the old value if it exists"
 msgstr ""
 
-#: ckanext/editor/templates/editor/editor_base.html:40
+#: ckanext/editor/templates/editor/editor_base.html:54
 msgid "Save"
 msgstr ""
 
-#: ckanext/editor/templates/editor/snippets/field_select.html:2
+#: ckanext/editor/templates/editor/editor_base.html:74
+msgid "Filter results"
+msgstr ""
+
+#: ckanext/editor/templates/editor/snippets/field_select.html:4
 msgid "Select field to edit"
 msgstr ""
 
-#: ckanext/editor/templates/editor/snippets/package_item.html:26
-msgid "Multiple values"
-msgstr ""
-
-#: ckanext/editor/templates/editor/snippets/package_item.html:34
+#: ckanext/editor/templates/editor/snippets/package_item.html:44
 msgid "Private"
 msgstr ""
 
-#: ckanext/editor/templates/editor/snippets/package_item.html:34
+#: ckanext/editor/templates/editor/snippets/package_item.html:44
 msgid "Public"
 msgstr ""
 
