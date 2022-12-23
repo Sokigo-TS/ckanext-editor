@@ -2,6 +2,7 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan.lib.plugins import DefaultTranslation
 from ckanext.editor import helpers
+from .views import editor as editor_blueprint
 
 
 class EditorPlugin(plugins.SingletonPlugin, DefaultTranslation):
@@ -11,6 +12,7 @@ class EditorPlugin(plugins.SingletonPlugin, DefaultTranslation):
     plugins.implements(plugins.IRoutes, inherit=True)
     if toolkit.check_ckan_version(min_version='2.5.0'):
         plugins.implements(plugins.ITranslation, inherit=True)
+    plugins.implements(plugins.IBlueprint)
 
     # IConfigurer
 
@@ -39,17 +41,9 @@ class EditorPlugin(plugins.SingletonPlugin, DefaultTranslation):
                 )
 
     def get_helpers(self):
-        return { 'get_group_names_for_package': helpers.get_group_names_for_package }
+        return {'get_group_names_for_package': helpers.get_group_names_for_package}
 
-    # IRoutes
+    # IBlueprint
 
-    def before_map(self, map):
-        map.connect('/editor',
-                    controller='ckanext.editor.controller:EditorController',
-                    action='package_search')
-
-        map.connect('/editor/package_update',
-                    controller='ckanext.editor.controller:EditorController',
-                    action='package_update')
-
-        return map
+    def get_blueprint(self):
+        return [editor_blueprint]
