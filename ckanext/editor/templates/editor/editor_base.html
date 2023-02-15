@@ -3,17 +3,15 @@
 
 {% block primary_content_inner %}
 
-  {% resource "editor_js/editor.js" %}
-  {% resource "editor_css/editor.css" %}
-
+  {% asset "editor/editor_js" %}
+  {% asset "editor_css/editor.css" %}
   <section class="module">
     <div class="module-content">
 
       {% block errors %}{{ form.errors(error_summary) }}{% endblock %}
 
       {% set sorting = [(_('Newest first'), 'date_released desc'), (_('Name Ascending'), 'title_string asc'), (_('Name Descending'), 'title_string desc')] %}
-      {% snippet 'snippets/search_form.html', form_id='dataset-search-form', type='dataset', query=c.q, sorting=sorting, sorting_selected=c.sort_by_selected, count=c.page.item_count, facets=facets, show_empty=request.params, error=c.query_error, fields=c.fields %}
-
+      {% snippet 'snippets/search_form.html', form_id='dataset-search-form', type='dataset', query=g.q, sorting=sorting, sorting_selected=g.sort_by_selected, count=page.item_count, facets=facets, show_empty=request.params, error=g.query_error, fields=g.fields %}
       <form action="editor/package_update" method="post" enctype="application/x-www-form-urlencoded" class="editor-form">
 
         {{ form.hidden('q', c.q) }}
@@ -24,12 +22,12 @@
         {% endblock  %}
 
         <div>
-          {% if c.selected_field_appendable %}
+          {% if g.selected_field_appendable %}
             <div class="radio">
               <label><input type="radio" name="edit_action" value="append" checked>{{ _('Add entered value to old values') }}</label>
             </div>
 
-          {% if not c.selected_field.removable_value %}
+          {% if not g.selected_field.removable_value %}
             <div class="radio">
               <label><input type="radio" name="edit_action" value="replace">{{ _('Replace old value with the entered value') }}</label>
             </div>
@@ -47,8 +45,8 @@
 
         <input type="hidden" name="format_as_tags" value="{{c.selected_field['format_as_tags']}}">
         <input type="hidden" name="form_languages" value="{{c.selected_field['form_languages']}}">
-        {% if c.fields -%}
-        <span>{{ form.hidden_from_list(fields=c.fields) }}</span>
+        {% if g.fields -%}
+        <span>{{ form.hidden_from_list(fields=g.fields) }}</span>
         {%- endif %}
         <div class="form-actions">
           <button type="submit" id="editor-form-submit" class="btn btn-primary">{{_('Save')}}</button>
@@ -57,14 +55,14 @@
         <hr>
 
         {% block editor_search_results_list %}
-          {{ h.snippet('editor/snippets/package_list.html', packages=c.page.items) }}
+         {{ h.snippet('editor/snippets/package_list.html', packages=c.page.items) }}
         {% endblock %}
 
       </form>
     </div>
 
       {% block page_pagination %}
-        {{ c.page.pager(q=c.q) }}
+         {{ c.page.pager(q=c.q) }}
       {% endblock %}
   </section>
 {% endblock  %}

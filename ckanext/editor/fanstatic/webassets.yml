@@ -1,0 +1,7 @@
+editor_js:
+  output: editor/editor.js
+  contents:
+    - js/editor.js
+  extra:
+    preload:
+      - base/main

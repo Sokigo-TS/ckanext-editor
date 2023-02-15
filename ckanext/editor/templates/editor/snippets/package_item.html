@@ -24,8 +24,8 @@ Example:
         <td class="field-value-column">
             <div class="column-content">
                 <!-- Display multilingual fields -->
-                {% if package[c.selected_field.field_name] is mapping %}
-                    {% for key, value in package[c.selected_field.field_name].iteritems() %}
+                {% if package[g.selected_field.field_name] is mapping %}
+                    {% for key, value in package[g.selected_field.field_name].items() %}
                         <b>{{key}}:</b>
                         <!-- Value is formatted as multilingual tags -->
                         {% if c.selected_field['format_as_tags'] %}
@@ -36,17 +36,17 @@ Example:
                         {% endif %}
                         {% if not loop.last %}<hr>{% endif %}
                     {% endfor %}
-                {% elif c.selected_field.field_name == 'group' or c.selected_field.field_name == 'collection'  %}
-                  {{ h.get_group_names_for_package(package['id'], c.selected_field.field_name) | join(', ')}}
-                {% elif c.selected_field.field_name == 'owner_org' %}
+                {% elif g.selected_field.field_name == 'group' or g.selected_field.field_name == 'collection'  %}
+                  {{ h.get_group_names_for_package(package['id'], g.selected_field.field_name) | join(', ')}}
+                {% elif g.selected_field.field_name == 'owner_org' %}
                   {{ package['organization'].title }}
-                {% elif c.selected_field.field_name == 'private' %}
-                  {{ _('Private') if package[c.selected_field.field_name] else _('Public') }}
+                {% elif g.selected_field.field_name == 'private' %}
+                  {{ _('Private') if package[g.selected_field.field_name] else _('Public') }}
                 <!-- Normal CKAN tag_string-like list without multilingual support -->
-                {% elif package[c.selected_field.field_name] is iterable and package[c.selected_field.field_name] is not string %}
-                    {{ package[c.selected_field.field_name] | join(', ')}}
+                {% elif package[g.selected_field.field_name] is iterable and package[g.selected_field.field_name] is not string %}
+                    {{ package[g.selected_field.field_name] | join(', ')}}
                 {% else %}
-                    {{ package[c.selected_field.field_name] }}
+                    {{ package[g.selected_field.field_name] }}
                 {% endif %}
             </div>
         </td>

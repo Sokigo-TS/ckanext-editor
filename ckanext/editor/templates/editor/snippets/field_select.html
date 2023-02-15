@@ -1,11 +1,11 @@
 
-{% resource 'editor/js/editor.js' %}
+{% asset 'editor/js/editor.js' %}
 <div class="form-group">
   <label for="field-select" class="control-label"><h3>{{ _('Select field to edit') }}</h3></label>
   <div class="controls">
     <select id="field-select" class="form-control" name="field" onchange="if (this.value) addFieldToParameters(this.value)">
-      {% for option in c.editable_fields %}
-      {% set selected = c.selected_field.field_name == option.field_name %}
+      {% for option in g.editable_fields %}
+      {% set selected = g.selected_field.field_name == option.field_name %}
       <option value="{{option.field_name}}" {% if selected %} selected="selected"{% endif %}>
         {{ _(option.label) }}
       </option>
@@ -14,7 +14,7 @@
   </div>
 </div>
 
-{% set field_snippet_path = 'scheming/form_snippets/' + c.selected_field.form_snippet or 'large_text_ex.html' %}
+{% set field_snippet_path = 'scheming/form_snippets/' + g.selected_field.form_snippet or 'large_text_ex.html' %}
 <div class="form-group">
-  {% snippet field_snippet_path, field=c.selected_field, data={}, errors=[] %}
+  {% snippet field_snippet_path, field=g.selected_field, data={}, errors=[] %}
 </div>

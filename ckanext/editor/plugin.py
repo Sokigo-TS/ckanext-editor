@@ -20,7 +20,6 @@ class EditorPlugin(plugins.SingletonPlugin, DefaultTranslation):
         toolkit.add_template_directory(config_, 'templates')
         toolkit.add_resource('fanstatic', 'editor')
         toolkit.add_resource('public/css/', 'editor_css')
-        toolkit.add_resource('public/js/', 'editor_js')
 
     # IConfigurable
 
