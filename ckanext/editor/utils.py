@@ -12,20 +12,20 @@ def append_package_value(package, edit_params):
     format_as_tags = edit_params.get('format_as_tags')
 
     # Update dictionary format value if field consists of multiple languages
-    if(len(languages) > 0 and not format_as_tags):
+    if len(languages) > 0 and not format_as_tags:
         value = {}
         for language in edit_params['languages']:
             key = field + '-' + language
-            language_value =  package[field].get(language) + request.POST[key]
+            language_value =  package[field].get(language) + request.form[key]
             value.update({ language : language_value })
 
         package[field] = value
     # If the value is tag-like and consists of multiple languages, it need to be formatted as a tag list
-    elif(len(languages) > 0 and format_as_tags):
+    elif len(languages) > 0 and format_as_tags:
         value = package[field]
         for language in languages:
             key = field + '-' + language
-            tag_list = request.POST[key].split(",") if len(request.POST[key]) > 0 else None
+            tag_list = request.form[key].split(",") if len(request.form[key]) > 0 else None
 
             # Add tags for this language only if any exist or the validation will fail later
             if tag_list:
@@ -38,9 +38,9 @@ def append_package_value(package, edit_params):
     # Otherwise we can just append the value to the old
     else:
         if field not in package:
-            package[field] = request.POST[field]
+            package[field] = request.form[field]
         else:
-            package[field] += request.POST[field]
+            package[field] += request.form[field]
 
     return package
 
@@ -57,7 +57,7 @@ def replace_package_value(package, edit_params):
         value = {}
         for language in languages:
             key = field + '-' + language
-            value.update({ language : request.POST[key] })
+            value.update({ language : request.form[key] })
     # If the value is tag-string list and consists of multiple languages, it needs to be formatted as a list
     elif(len(languages) > 0 and format_as_tags):
         value = {}
@@ -65,14 +65,14 @@ def replace_package_value(package, edit_params):
             key = field + '-' + language
 
             # Replace old value with an empty list if a tag was not entered
-            language_value = request.POST[key].split(",")  if len(request.POST[key]) > 0 else []
+            language_value = request.form[key].split(",")  if len(request.form[key]) > 0 else []
             value.update({ language : language_value })
 
         package[field] = value
     elif edit_params.get('field_value'):
         value = edit_params['field_value']
     else:
-        value = request.POST[field]
+        value = request.form[field]
 
     package[field] = value
 
@@ -156,7 +156,7 @@ def get_editable_fields():
 def selected_field():
 
     # Set default field to selection
-    default_field = request.params.get('_field') if request.params.get('_field') else config.get('ckanext.editor.default_field')
+    default_field = request.args.get('_field') if request.args.get('_field') else config.get('ckanext.editor.default_field')
     _selected_field = {}
     for field in g.editable_fields:
         if field.get('field_name') == default_field:

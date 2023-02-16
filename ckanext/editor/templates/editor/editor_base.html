@@ -12,7 +12,7 @@
 
       {% set sorting = [(_('Newest first'), 'date_released desc'), (_('Name Ascending'), 'title_string asc'), (_('Name Descending'), 'title_string desc')] %}
       {% snippet 'snippets/search_form.html', form_id='dataset-search-form', type='dataset', query=g.q, sorting=sorting, sorting_selected=g.sort_by_selected, count=page.item_count, facets=facets, show_empty=request.params, error=g.query_error, fields=g.fields %}
-      <form action="editor/package_update" method="post" enctype="application/x-www-form-urlencoded" class="editor-form">
+      <form action="" method="post" enctype="application/x-www-form-urlencoded" class="editor-form">
 
         {{ form.hidden('q', c.q) }}
         {{ form.hidden('sort', c.sort_by_selected) }}
