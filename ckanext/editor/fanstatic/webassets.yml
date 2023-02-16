@@ -5,3 +5,8 @@ editor_js:
   extra:
     preload:
       - base/main
+
+editor_css:
+  output: editor/editor.css
+  contents:
+    - editor.css

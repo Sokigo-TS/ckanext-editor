@@ -19,7 +19,6 @@ class EditorPlugin(plugins.SingletonPlugin, DefaultTranslation):
     def update_config(self, config_):
         toolkit.add_template_directory(config_, 'templates')
         toolkit.add_resource('fanstatic', 'editor')
-        toolkit.add_resource('public/css/', 'editor_css')
 
     # IConfigurable
 
