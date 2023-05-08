@@ -1,8 +1,9 @@
 [main]
 host = https://www.transifex.com
 
-[sixodp.ckanext-editor]
+[o:6aika-dataportal:p:sixodp:r:ckanext-editor]
 file_filter = ckanext/editor/i18n/<lang>/LC_MESSAGES/ckanext-editor.po
 source_file = ckanext/editor/i18n/ckanext-editor.pot
 source_lang = en
-type = PO
+type        = PO
+
