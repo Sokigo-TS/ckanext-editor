@@ -107,7 +107,7 @@ class EditorView(MethodView):
         except ValidationError:
             return abort(409, _('Validation error'))
         except KeyError as e:
-            toolkit.redirect_to('editor.editor', **request.params)
+            toolkit.redirect_to('editor.search', **request.params)
 
         formats = []
         coverages = []
@@ -187,7 +187,7 @@ class EditorView(MethodView):
                       extra_vars=extra_vars)
 
 
-editor.add_url_rule('/editor', view_func=EditorView.as_view('editor'), methods=["GET", "POST"])
+editor.add_url_rule('/editor', view_func=EditorView.as_view('search'), methods=["GET", "POST"])
 
 def _search():
 
@@ -231,7 +231,7 @@ def _search():
         sort_by_fields = [field.split()[0] for field in sort_by.split(u',')]
     extra_vars[u'sort_by_fields'] = sort_by_fields
 
-    pager_url = partial(_pager_url, params_nopage, package_type)
+    pager_url = partial(_pager_url, params_nopage, "editor")
 
     search_url_params = urlencode(_encode_params(params_nopage))
     extra_vars[u'search_url_params'] = search_url_params
