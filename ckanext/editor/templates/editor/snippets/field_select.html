@@ -7,7 +7,7 @@
       {% for option in g.editable_fields %}
       {% set selected = g.selected_field.field_name == option.field_name %}
       <option value="{{option.field_name}}" {% if selected %} selected="selected"{% endif %}>
-        {{ _(option.label) }}
+        {{ h.scheming_language_text(option.label) }}
       </option>
       {% endfor %}
     </select>
@@ -18,3 +18,4 @@
 <div class="form-group">
   {% snippet field_snippet_path, field=g.selected_field, data={}, errors=[] %}
 </div>
+

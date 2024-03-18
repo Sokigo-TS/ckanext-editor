@@ -12,7 +12,7 @@ import ckan.plugins as plugins
 from ckan.plugins import toolkit
 
 from ckan.lib.plugins import lookup_package_plugin
-from ckan.views.dataset import drill_down_url, remove_field, _sort_by, _pager_url, _encode_params, _get_search_details
+from ckan.views.dataset import remove_field, _sort_by, _pager_url, _encode_params, _get_search_details # drill_down_url
 from flask.views import MethodView
 
 from six.moves.urllib.parse import urlencode
@@ -217,7 +217,7 @@ def _search():
     params_nopage = [(k, v) for k, v in request.args.items(multi=True)
                      if k != u'page']
 
-    extra_vars[u'drill_down_url'] = drill_down_url
+    ## extra_vars[u'drill_down_url'] = drill_down_url
     extra_vars[u'remove_field'] = partial(remove_field, package_type)
 
     sort_by = request.args.get(u'sort', None)

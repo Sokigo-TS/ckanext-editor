@@ -4,12 +4,13 @@ from ckan.lib.plugins import DefaultTranslation
 from ckanext.editor import helpers
 from .views import editor as editor_blueprint
 
+from ckanext.editor import helpers
 
 class EditorPlugin(plugins.SingletonPlugin, DefaultTranslation):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IConfigurable)
     plugins.implements(plugins.ITemplateHelpers)
-    plugins.implements(plugins.IRoutes, inherit=True)
+    #plugins.implements(plugins.IRoutes, inherit=True)
     if toolkit.check_ckan_version(min_version='2.5.0'):
         plugins.implements(plugins.ITranslation, inherit=True)
     plugins.implements(plugins.IBlueprint)
@@ -39,9 +40,29 @@ class EditorPlugin(plugins.SingletonPlugin, DefaultTranslation):
                 )
 
     def get_helpers(self):
-        return {'get_group_names_for_package': helpers.get_group_names_for_package}
+        return dict(helpers.all_helpers)
 
     # IBlueprint
 
     def get_blueprint(self):
         return [editor_blueprint]
+        
+    #def before_map(self, map):
+    ## Define the route
+    #    map.connect(
+    #        'Editor',
+    #        '/editor'
+    #    )
+    #    return map
+    #
+    #    
+    #def after_map(self, map):
+    #    # Add the route to the menu
+    #    tk.menu_item(
+    #        'Editor',
+    #        '/editor',
+    #        icon='extension',
+    #        context='ckan',
+    #        order=5
+    #    )
+    #    return map    
