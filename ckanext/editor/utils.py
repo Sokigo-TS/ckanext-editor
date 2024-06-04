@@ -3,6 +3,8 @@ from ckan.plugins.toolkit import request, config, g, get_action
 from ckan.plugins import plugin_loaded
 from ckanext.scheming.helpers import scheming_get_dataset_schema
 
+from ckan.common import config
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -48,6 +50,7 @@ def append_package_value(package, edit_params):
 
 
 def replace_package_value(package, edit_params):
+
     field = edit_params.get('field')
     languages = edit_params.get('languages')
     format_as_tags = edit_params.get('format_as_tags')
@@ -71,9 +74,56 @@ def replace_package_value(package, edit_params):
         package[field] = value
     elif edit_params.get('field_value'):
         value = edit_params['field_value']
+        
+    elif field == 'custom_form_fields':
+    
+        excluded_items = config.get('excludedkeys_editor_custom_form_fields')
+
+        if excluded_items:
+            excluded_keys = excluded_items.split()
+        else:
+            excluded_keys = []
+
+        extras = {}
+        for key, value in request.form.items():
+            if key and value and 'extras' in key:
+                # Extract the index and field type (key or value)
+                parts = key.split('__')
+                if len(parts) == 3:
+                    index, field_type = parts[1], parts[2]
+                    if index not in extras:
+                        extras[index] = {}
+                    extras[index][field_type] = value   
+                
+        # Now, extras is a dictionary with keys and values parsed from the form data
+        for index, fields in extras.items():
+            if 'key' in fields and 'value' in fields:
+                key, value = fields['key'], fields['value']
+                # Check if key and value are not empty
+                if key and value:
+                    log.info(f'Key: {key}, Value: {value}')
+                    
+                    if key.lower() in [excluded_key.lower() for excluded_key in excluded_keys]:
+                        log.info(f'Skipped key: {key} as it is in the excluded list')
+                        continue
+                    
+                    # Checking if key exist in package then update else add new
+                    found = False
+                        
+                    for extra in package['extras']:
+                        if extra['key'].lower() == key.lower():
+                            extra['value'] = value
+                            found = True
+                            log.info(f'Updated key: {key} with value: {value}')
+                            break
+                    
+                    if not found:
+                        package['extras'].append({'key': key, 'value': value})
+                        log.info(f'Added key: {key} with value: {value}')
+        return package                
     else:
         value = request.form[field]
-
+     
     package[field] = value
 
     return package
