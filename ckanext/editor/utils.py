@@ -139,7 +139,9 @@ def get_editable_fields():
             'form_snippet': field.get('form_snippet') if field.get('form_snippet') else 'text.html',
             'form_languages': field.get('form_languages') if field.get('form_languages') else [],
             'form_attrs': field.get('form_attrs') if field.get('form_attrs') else {},
-            'format_as_tags': True if field.get('form_attrs', {}).get('data-module-tags', None) is not None else False
+            'format_as_tags': True if field.get('form_attrs', {}).get('data-module-tags', None) is not None else False,
+            'choices': field.get('choices') if field.get('choices') else None,
+            'choices_helper': field.get('choices_helper') if field.get('choices_helper') else None
         })
 
     # Strip out fields that are not configured to be editable

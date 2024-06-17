@@ -45,6 +45,11 @@ Example:
                 <!-- Normal CKAN tag_string-like list without multilingual support -->
                 {% elif package[g.selected_field.field_name] is iterable and package[g.selected_field.field_name] is not string %}
                     {{ package[g.selected_field.field_name] | join(', ')}}
+		        {% elif g.selected_field.field_name == 'linked_dataset' and  package[g.selected_field.field_name]%}
+				     {% set dataset_title = h.get_dataset_title(package[g.selected_field.field_name]) %}
+                        {% if dataset_title %}
+                            {{ h.link_to(h.truncate(dataset_title, truncate_title), h.url_for('dataset.read', id=package[g.selected_field.field_name])) }}                    
+                        {% endif %}
                 {% else %}
                     {{ package[g.selected_field.field_name] }}
                 {% endif %}
